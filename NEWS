@@ -1,0 +1,93 @@
+Version 0.8.3.9000
+2017-08-29 (dedicated to my wife's 60th birthday)
+     - Examples updated to reflect the latest release of Power2Stage
+       df=n-3 instaed of n-2 in the sample size estimation and pooled
+       analysis.
+     - pmethod in opt() not forced to "nct" any more. Both "shifted"
+       and "exact" work with uniroot's interval=c(tol, alpha0) instead
+       of c(0, alpha0). Adjusting alpha with pmethod="exact" is extremly
+       slow (couple of hours).
+     - TSD_Backgound.pdf added in /doc subdirectory.
+     - published at GitHub
+Version 0.8.2
+2016-10-14 (released to beta-testers)
+     - Added (optional) 95% CI of TIE(s).
+Version 0.8.1
+2016-09-27 (released to beta-testers)
+     - Added the disclaimer (from the man-page) to the output.
+Version 0.8
+2016-09-19 (released to beta-testers)
+     - Changed the specification of PEs for clarity:
+       "lin" => "ratio", "log" => "difflog".
+     - Added an example with 4-element vector variabilities and missing
+       PEs to the man-page.
+Version 0.7
+2016-06-21 (released to beta-testers)
+     - If the study's specifications match any of the published methods
+       check whether n1, CV1, max.n, GMR, target are within the
+       validated range. If not issue a warning.
+Version 0.6
+2016-06-17 (not released)
+     - Additional information supporting validation.
+     - Estimate N in sampleN.TOST(method=pmethod) for consistency.
+     - Bug corrected in assessing CI-futility.
+     - CV is now correctly calculated from the CI in in the final analysis
+       (one df less due to factor 'stage' in the model).
+Version 0.5
+2016-06-14 (not released)
+     - Changed to a function and added a fair amount of input /
+       consistency checking.
+     - Convergence tolerance for uniroot() can be given by the argument
+       tol. Defaults to 1e-8.
+     - Added a plot of PE and CI (for specified and adjusted alpha).
+     - In case the CVs are not given in the report, a four-element vector
+       can be given in Var1 and/or Var. 1st two elements = lower and upper
+       CI, 3rd element = alpha, 4th element = "CI".
+       Warning: The CV based on the final CI (from Var) is only approximate
+       since the factor 'stage' is not taken into account. Hence, the
+       calculated CI will disagree with the report! However, this has no
+       influence on the estimated TIE (based on the /interim/ data).
+Version 0.4
+2016-05-16 (not released)
+     - Added new algorithm: Simulate a set of TIEs around the optimzed
+       alpha. Fits two models (linear and quadratic), select the better
+       one by minimum AIC and solve for TIE = alpha0.
+       algo 1: Like in previous versions.
+       algo 2: Fitted model.
+     - Started to work on vectorized CV and n1 (needed for Welsh-test).
+       Buggy!
+Version 0.3
+2016-05-11 (not released)
+     - Added parallel TSDs (by Welch-test only).
+     - Variabilities can be given as CV or MSE.
+     - PE can be given as a ratio (backtransformed) or as a difference
+       of log-means.
+     - In the interim all specified conditions (N, futility conditions(s),
+       alpha0 or alpha1 in Type 1 (based on power) are assessed.
+     - Corrected the final analysis (one degree of less due to stage as
+       a fixed effect in the model).
+     - If adjustment was done, gives a statement about agreement and
+       regulatory suggestions.
+     - Included validation examples.
+Version 0.2
+2016-05-04 (not released)
+     - The power analysis is now optional. Follows the boolean argument
+        pa (TRUE|FALSE).
+     - Added the interim analysis.
+     - Tries to reconstruct the applied method from the specified type
+       and alpha(s).
+     - The alpha-optimzation is now optional. Skips this time-consuming
+       step if the TIE with the specified alpha(s) is less or equal to
+       alpha0 and the argument skip is set to TRUE.
+Version 0.1
+2016-05-03 (not released)
+     - Merged the two optimizations functions.
+     - Added power of specified alphas.
+     - Enhanced the sample size plots.
+     - Windows-conform line-endings (CR/LF).
+     - Documents: System, user, OS, versions of R, Power2Stage, PowerTOST,
+       and this code.
+     - Calculates CI in the final analysis based on specified and - if
+       applicable - adjusted alpha.
+Version 0.0
+2016-05-02 (not released)

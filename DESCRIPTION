@@ -1,0 +1,19 @@
+Package: adaptiveBE
+Version: 0.8.3.9000
+Date: 2017-08-29
+Title: Check Acceptance of Adaptive Bioequivalence Studies
+Authors@R: c(person("Helmut", "Schuetz", role = c("aut", "cre"),
+                    email = "helmut.schuetz@bebac.at"))
+Author: Helmut Schuetz [aut, cre]
+Maintainer: Helmut Schuetz <helmut.schuetz@bebac.at>
+Depends: R (>= 3.1.0)
+Description: Functions to obtain the operational characteristics of
+             BE studies in 2-stage designs via simulations.
+Imports:  PowerTOST, Power2Stage, stats, utils, graphics, grDevices
+ByteCompile: yes
+License: GPL (>=2)
+LazyLoad: yes
+LazyData: yes
+NeedsCompilation: no
+URL: https://github.com/Helmut01/adaptiveBE
+BugReports: https://github.com/Helmut01/adaptiveBE/issues

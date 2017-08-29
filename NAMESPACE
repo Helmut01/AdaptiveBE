@@ -1,0 +1,21 @@
+# Import selectively only the used functions (good practice)
+importFrom(Power2Stage,
+           power.2stage.fC, power.2stage.p, power.2stage.KM)
+importFrom(PowerTOST,
+           mse2CV, CV2mse, se2CV, CVfromCI, CI.BE, power.TOST,
+           sampleN.TOST)
+importFrom(utils,
+           flush.console, citation, sessionInfo, packageVersion,
+           setTxtProgressBar, txtProgressBar)
+importFrom(stats,
+           qt, uniroot, binom.test, lm, coef, fitted, extractAIC,
+           median)
+importFrom(graphics,
+           abline, box, grid, par, plot, points, legend, text, mtext,
+           axis, arrows, title)
+importFrom(grDevices,
+           graphics.off, dev.new)
+# Export explicitly by name
+export(
+  check.TSD
+)
