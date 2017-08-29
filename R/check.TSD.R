@@ -30,7 +30,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   ##       and alpha2 optimized.                                      ##
   ## ---------------------------------------------------------------- ##
   ## Author:                                                          ##
-  ##   Helmut SchÃ¼tz                                                  ##
+  ##   Helmut Schütz                                                  ##
   ##   BEBAC, Neubaugasse 36/11, 1070 Vienna, Austria                 ##
   ##   helmut.schuetz@bebac.at                                        ##
   ## ---------------------------------------------------------------- ##
@@ -177,7 +177,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   ## ---------------------------------------------------------------- ##
   ## Conditions (hopefully) stated in the protocol:                   ##
   ## ---------------------------------------------------------------- ##
-  ##   type:    'Type' of design (for the definition see SchÃ¼tz 2015) ##
+  ##   type:    'Type' of design (for the definition see Schütz 2015) ##
   ##            1: Potvin et al. "B", Fuglsang 2013 "B",              ##
   ##               Fuglsang 2014 "B" (parallel), Xu et al. "E"        ##
   ##            2: Potvin et al. "C", Montague et al. "D",            ##
@@ -294,7 +294,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   ##            will be shown. Defaults to FALSE.                     ##
   ## ================================================================ ##
   ## Known bugs:                                                      ##
-  ##  - None so far. ;-)                                              ##
+  ##  - Sample size for stage 2 with n-2 dfs (sampleN.TOST).          ##
   ## ================================================================ ##
   ## TODO (not covered yet):                                          ##
   ##  - Parallel groups:                                              ##
@@ -310,6 +310,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   ##    Remedy: Vectorized input of sample sizes.                     ##
   ##  - CV from the CI in the final analysis: 'Reverse' the function  ##
   ##    BEpooled() with the correct df.                               ##
+  ##  - Update n2 with new funtrion from Power2Stage.                 ##
   ##  - No alpha-spending in the first stage = (blinded) sample size  ##
   ##    re-estimation acc. to Golkowski et al. 2014. Available in     ##
   ##    function power.2stage.ssr(). Generally needs a /lot/ of ad-   ##
@@ -350,7 +351,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   ## Kieser & Rauch 2015   http://dx.doi.org/10.1002/sim.6487
   ##   GMR 0.95, power 0.8 (Type 1 [Method B] and 2 [Method C]):
   ##     alpha1 = alpha2 = 0.0304
-  ## SchÃ¼tz 2015           http://dx.doi.org/10.1007/s00228-015-1806-2
+  ## Schütz 2015           http://dx.doi.org/10.1007/s00228-015-1806-2
   ########################################################################
   # Asymmetric split of alpha (alpha1 != alpha2, where alpha2 > alpha1). #
   ########################################################################
@@ -463,7 +464,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
     pe <- sqrt(lower*upper)
     if (length(n) == 1) {
       # n given as ntotal
-       n <- nvec(n = n, grps = 2)
+      n <- nvec(n = n, grps = 2)
       if (n[1] != n[length(n)]) {
         message("Unbalanced ", design, " design. n(i)= ",
                 paste(n, collapse = "/"), " assumed.")
@@ -483,7 +484,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
     sw     <- 0.5 * (s1 + s2)
     if (abs(s1 - s2)/sw > 0.1) {
       warning(paste("sigma based on pe & lower CL more than 10% different than\n",
-              "sigma based on pe & upper CL. Check input."))
+                    "sigma based on pe & upper CL. Check input."))
     }
     return(se2CV(sw))
   }
@@ -491,35 +492,35 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   # The workhorse for optimization. Called by uniroot(). #
   ########################################################
   opt <- function(x) {
-           # Optimizes adjusted alpha(s) based on stage 1 data.
-           # Objective function: TIE(x) - alpha0 = 0
-           # Arguments         : Study specifications as given above.
-           # Returns           : Adjusted alpha(s) giving TIE ~alpha0.
-           # asymmetric split of alphas?
-           if (asym) alpha <- c(alpha1, x) else alpha <- rep(x, 2)
-           if (!KM) {  # The common methods.
-             if (Xover) { # Crossover.
-               power.2stage.fC(method=meth, alpha0=alpha0, alpha=alpha,
-                               n1=n1, GMR=GMR, CV=CV1, targetpower=target,
-                               pmethod=pmethod, usePE=usePE,
-                               powerstep=int.pwr, min.n2=min.n2,
-                               max.n=max.n, fCrit=fCrit, fClower=fClow,
-                               theta0=theta2, nsims=nsims,
-                               setseed=setseed)$pBE - alpha0
-             } else {     # Parallel.
-               power.2stage.p(method=meth, alpha0=alpha0, alpha=alpha,
-                              n1=n1, GMR=GMR, CV=CV1, targetpower=target,
-                              pmethod=pmethod, usePE=usePE, Nmax=Nmax,
-                              test="welch", theta0=theta2, nsims=nsims,
-                              setseed=setseed)$pBE - alpha0
-             }
-           } else {    # Adaptive (Karalis/Macheras and Karalis).
-             power.2stage.KM(method=meth, alpha0=alpha0, alpha=alpha,
-                             n1=n1, CV=CV1, targetpower=target,
-                             pmethod=pmethod, Nmax=Nmax, theta0=theta2,
-                             nsims=nsims, setseed=setseed)$pBE - alpha0
-           }
-         }
+    # Optimizes adjusted alpha(s) based on stage 1 data.
+    # Objective function: TIE(x) - alpha0 = 0
+    # Arguments         : Study specifications as given above.
+    # Returns           : Adjusted alpha(s) giving TIE ~alpha0.
+    # asymmetric split of alphas?
+    if (asym) alpha <- c(alpha1, x) else alpha <- rep(x, 2)
+    if (!KM) {  # The common methods.
+      if (Xover) { # Crossover.
+        power.2stage.fC(method=meth, alpha0=alpha0, alpha=alpha,
+                        n1=n1, GMR=GMR, CV=CV1, targetpower=target,
+                        pmethod=pmethod, usePE=usePE,
+                        powerstep=int.pwr, min.n2=min.n2,
+                        max.n=max.n, fCrit=fCrit, fClower=fClow,
+                        theta0=theta2, nsims=nsims,
+                        setseed=setseed)$pBE - alpha0
+      } else {     # Parallel.
+        power.2stage.p(method=meth, alpha0=alpha0, alpha=alpha,
+                       n1=n1, GMR=GMR, CV=CV1, targetpower=target,
+                       pmethod=pmethod, usePE=usePE, Nmax=Nmax,
+                       test="welch", theta0=theta2, nsims=nsims,
+                       setseed=setseed)$pBE - alpha0
+      }
+    } else {    # Adaptive (Karalis/Macheras and Karalis).
+      power.2stage.KM(method=meth, alpha0=alpha0, alpha=alpha,
+                      n1=n1, CV=CV1, targetpower=target,
+                      pmethod=pmethod, Nmax=Nmax, theta0=theta2,
+                      nsims=nsims, setseed=setseed)$pBE - alpha0
+    }
+  }
 
   #########################################################
   # Function to estimate the TIE for the given conditions #
@@ -605,10 +606,10 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
                        nsims=1e5, setseed=setseed)
       }
     } else {       # Adaptive (Karalis/Macheras and Karalis).
-        power.2stage.KM(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
-                        CV=CV1, targetpower=target, pmethod=pmethod,
-                        Nmax=Nmax, theta0=GMR, nsims=1e5,
-                        setseed=setseed)
+      power.2stage.KM(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
+                      CV=CV1, targetpower=target, pmethod=pmethod,
+                      Nmax=Nmax, theta0=GMR, nsims=1e5,
+                      setseed=setseed)
     }
   }
 
@@ -760,8 +761,8 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   } else {
     # Suppress messages regarding unbalanced designs.
     suppressMessages(
-    CV1 <- CVfromCI(lower=as.double(Var1[1]), upper=as.double(Var1[2]),
-                    alpha=as.double(Var1[3]), n=n1, design=design)
+      CV1 <- CVfromCI(lower=as.double(Var1[1]), upper=as.double(Var1[2]),
+                      alpha=as.double(Var1[3]), n=n1, design=design)
     )
   }
   # Pooled data.
@@ -773,8 +774,8 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
     } else { # from CI
       # Suppress messages regarding unbalanced designs.
       suppressMessages(
-      CV <- CVfromFinalCI(lower=as.double(Var[1]), upper=as.double(Var[2]),
-                     alpha=as.double(Var[3]), n=N, design=design)
+        CV <- CVfromFinalCI(lower=as.double(Var[1]), upper=as.double(Var[2]),
+                            alpha=as.double(Var[3]), n=N, design=design)
       )
     }
   }
@@ -840,17 +841,17 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   } else {
     if (pmethod != "exact") {
       info1 <- paste(
-          "\n  ====================================================",
-          "\n   1.1 million BE studies in a TSD will be simulated.",
-          "\n   Should take less than one minute on most systems.",
-          "\n  ====================================================\n")
+        "\n  ====================================================",
+        "\n   1.1 million BE studies in a TSD will be simulated.",
+        "\n   Should take less than one minute on most systems.",
+        "\n  ====================================================\n")
     } else {
       info1 <- paste(
-          "\n  ====================================================",
-          "\n   1.1 million BE studies in a TSD will be simulated.",
-          "\n   Should take less than one minute on most systems.",
-          "\n   Will take a couple of minutes on most systems.   ",
-          "\n  ====================================================\n")
+        "\n  ====================================================",
+        "\n   1.1 million BE studies in a TSD will be simulated.",
+        "\n   Should take less than one minute on most systems.",
+        "\n   Will take a couple of minutes on most systems.   ",
+        "\n  ====================================================\n")
     }
   }
   if (pmethod != "exact") {
@@ -963,7 +964,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
               target != 0.8) outside.range <- TRUE
         }
         if ((unique(c(c(alpha1, alpha2))) == 0.0274 |
-            unique(c(c(alpha1, alpha2))) == 0.0269) & min.n2 == 0) {
+             unique(c(c(alpha1, alpha2))) == 0.0269) & min.n2 == 0) {
           des.type <- paste(type, "(Fuglsang 2013, Method C/D)")
           if (CV1 < 0.1 | CV1 > 0.8 | n1 < 12 | n1 > 60 | GMR != 0.95 |
               target != 0.9) outside.range <- TRUE
@@ -993,10 +994,10 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   } else {
     if (fCrit == "PE" | KM) {
       fC.check <- paste0("PE outside [",
-                  sprintf("%.4f, %.4f", fClow, 1/fClow), "]")
+                         sprintf("%.4f, %.4f", fClow, 1/fClow), "]")
     } else {
       fC.check <- paste0("CI outside [",
-                  sprintf("%.4f, %.4f", fClow, 1/fClow), "]")
+                         sprintf("%.4f, %.4f", fClow, 1/fClow), "]")
     }
   }
 
@@ -1027,9 +1028,9 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   }
   # browser() # Check input and variables.
   txt <- paste(paste0("\n", hr,
-    "\nSystem             : ", node,
-    "\nUser               : ", user,
-    "\nOperating System   : ", OS, " ", OSrel))
+                      "\nSystem             : ", node,
+                      "\nUser               : ", user,
+                      "\nOperating System   : ", OS, " ", OSrel))
   if (OS == "Darwin") { # special treatment (long system[["version"]])
     tmp <- strwrap(OSver, width = 79, prefix="\n                     ")
     for (j in 1:length(tmp)) {
@@ -1039,109 +1040,110 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
     txt <- paste0(txt, " ", OSver)
   }
   txt <- paste(paste0(txt, "\nR version          : ", rver,
-    "\nPower2Stage version: ", packageVersion("Power2Stage"), year1,
-    "\nPowerTOST version  : ", packageVersion("PowerTOST"), year2,
-    "\nAdaptiveBE version : ", packageVersion("AdaptiveBE"), year3,
-    "\n            started: ", exec.start, "\n"))
+                      "\nPower2Stage version: ", packageVersion("Power2Stage"), year1,
+                      "\nPowerTOST version  : ", packageVersion("PowerTOST"), year2,
+                      "\nAdaptiveBE version : ", packageVersion("AdaptiveBE"), year3,
+                      "\ncheck.TSD() started: ", exec.start, "\n"))
+
   if (valid) {
     txt <- paste(txt, "\nValidation;")
     if (expl == 1) {
       txt <- paste(txt, paste0("internal expl == 1\n", hr,
-                        "\nPotvin et al. 2008 (doi 10.1002/pst.294) target power 80%"),
-                        "\nExample 1, Method B. Reported results (power for GMR 0.95):",
-                        "\nInterim analyis: 94.12% CI: 104.27\u2013134.17% (power 75.6%)",
-                        "\nFinal analysis : 94.12% CI: 102.83\u2013129.71% (power NR)\n")
+                               "\nPotvin et al. 2008 (doi 10.1002/pst.294) target power 80%"),
+                   "\nExample 1, Method B. Reported results (power for GMR 0.95):",
+                   "\nInterim analyis: 94.12% CI: 104.27\u2013134.17% (power 75.6%)",
+                   "\nFinal analysis : 94.12% CI: 102.83\u2013129.71% (power NR)\n")
     }
     if (expl == 2) {
       txt <- paste(txt, paste0("internal expl == 1\n", hr,
-                        "\nPotvin et al. 2008 (doi 10.1002/pst.294) target power 80%"),
-                        "\nExample 1, Method C. Reported results (power for GMR 0.95):",
-                        "\nInterim analyis: 90.00% CI: 106.26\u2013131.66% (power 84.1%)",
-                        "\nFinal analysis : NA (stopped in the interim)\n")
+                               "\nPotvin et al. 2008 (doi 10.1002/pst.294) target power 80%"),
+                   "\nExample 1, Method C. Reported results (power for GMR 0.95):",
+                   "\nInterim analyis: 90.00% CI: 106.26\u2013131.66% (power 84.1%)",
+                   "\nFinal analysis : NA (stopped in the interim)\n")
     }
     if (expl == 3) {
       txt <- paste(txt, paste0("internal expl == 3\n", hr,
-                        "\nPotvin et al. 2008 (doi 10.1002/pst.294) target power 80%"),
-                        "\nExample 2, Method B. Reported results (power for GMR 0.95):",
-                        "\nInterim analyis: 94.12% CI: 92.93\u2013127.28% (power 50.5%)",
-                        "\nFinal analysis : 94.12% CI: 88.45\u2013116.38% (power 66.3%)\n")
+                               "\nPotvin et al. 2008 (doi 10.1002/pst.294) target power 80%"),
+                   "\nExample 2, Method B. Reported results (power for GMR 0.95):",
+                   "\nInterim analyis: 94.12% CI: 92.93\u2013127.28% (power 50.5%)",
+                   "\nFinal analysis : 94.12% CI: 88.45\u2013116.38% (power 66.3%)\n")
     }
     if (expl == 4) {
       txt <- paste(txt, paste0("internal expl == 4\n", hr,
-                        "\nPotvin et al. 2008 (doi 10.1002/pst.294) target power 80%"),
-                        "\nExample 2, Method C. Reported results (power for GMR 0.95):",
-                        "\nInterim analyis: 94.12% CI: 92.93\u2013127.28% (power 64.9%)",
-                        "\nFinal analysis : 94.12% CI: 88.45\u2013116.38% (power 66.3%)\n")
+                               "\nPotvin et al. 2008 (doi 10.1002/pst.294) target power 80%"),
+                   "\nExample 2, Method C. Reported results (power for GMR 0.95):",
+                   "\nInterim analyis: 94.12% CI: 92.93\u2013127.28% (power 64.9%)",
+                   "\nFinal analysis : 94.12% CI: 88.45\u2013116.38% (power 66.3%)\n")
     }
     if (expl == 5) {
       txt <- paste(txt, paste0("internal expl == 5\n", hr,
-                        "\nMontague et al. 2011 (doi 10.1002/pst.483) target power 80%"),
-                        "\nMethod D. GMR 0.90:",
-                        "\nTable I. Maximum TIE at n1 12 and CV 20%: 0.0518\n")
+                               "\nMontague et al. 2011 (doi 10.1002/pst.483) target power 80%"),
+                   "\nMethod D. GMR 0.90:",
+                   "\nTable I. Maximum TIE at n1 12 and CV 20%: 0.0518\n")
     }
     if (expl == 6) {
       txt <- paste(txt, paste0("internal expl == 6\n", hr,
-                        "\nHaybittle/Peto, GMR 0.95, target power 80%\n"))
+                               "\nHaybittle/Peto, GMR 0.95, target power 80%\n"))
     }
     if (expl == 7) {
       txt <- paste(txt, paste0("internal expl == 7\n", hr,
-                        "\nZheng et al. 2015 (doi 10.1002/pst.1672)"),
-                        "\nMSDBE (GMR 0.95, target power 80%)",
-                        "\nn1 12, CV 30%, 20,000 simulations",
-                        "\nTable I  : TIE   0.046",
-                        "\nTable III: power 0.775\n")
+                               "\nZheng et al. 2015 (doi 10.1002/pst.1672)"),
+                   "\nMSDBE (GMR 0.95, target power 80%)",
+                   "\nn1 12, CV 30%, 20,000 simulations",
+                   "\nTable I  : TIE   0.046",
+                   "\nTable III: power 0.775\n")
     }
     if (expl == 8) {
       txt <- paste(txt, paste0("internal expl == 8\n", hr,
-                        "\nXu et al. 2015 (doi 10.1002/pst.1721) target power 80%"),
-                        "\nMethod E for ISCV 30\u201350%. Reported results (power for GMR 0.95):",
-                        "\nInterim analyis: 94.92% CI: 78\u2013114% (power 35.8%)",
-                        "\nFinal analysis : 92.86% CI: 91\u2013112% (power NR)\n")
+                               "\nXu et al. 2015 (doi 10.1002/pst.1721) target power 80%"),
+                   "\nMethod E for ISCV 30\u201350%. Reported results (power for GMR 0.95):",
+                   "\nInterim analyis: 94.92% CI: 78\u2013114% (power 35.8%)",
+                   "\nFinal analysis : 92.86% CI: 91\u2013112% (power NR)\n")
     }
     if (expl == 9) {
       txt <- paste(txt, paste0("internal expl == 9\n", hr,
-                        "\nXu et al. 2015 (doi 10.1002/pst.1721) target power 80%"),
-                        "\nMethod F for ISCV 30\u201350%. Reported results (power for GMR 0.95):",
-                        "\nInterim analyis: 94.82% CI: 78\u2013114% (power 48.7%)",
-                        "\nFinal analysis : 93.02% CI: 91\u2013112% (power NR)\n")
+                               "\nXu et al. 2015 (doi 10.1002/pst.1721) target power 80%"),
+                   "\nMethod F for ISCV 30\u201350%. Reported results (power for GMR 0.95):",
+                   "\nInterim analyis: 94.82% CI: 78\u2013114% (power 48.7%)",
+                   "\nFinal analysis : 93.02% CI: 91\u2013112% (power NR)\n")
     }
     if (expl == 10) {
       txt <- paste(txt, paste0("internal expl == 10\n", hr,
-                        "\nFuglsang 2013 (doi 10.1208/s12248-013-9475-5) target power 90%"),
-                        "\nMethod B. GMR 0.95:",
-                        "\nTable I. Maximum TIE at n1 60 and CV 50%: 0.0501\n")
+                               "\nFuglsang 2013 (doi 10.1208/s12248-013-9475-5) target power 90%"),
+                   "\nMethod B. GMR 0.95:",
+                   "\nTable I. Maximum TIE at n1 60 and CV 50%: 0.0501\n")
     }
     if (expl == 11) {
       txt <- paste(txt, paste0("internal expl == 11\n", hr,
-                        "\nFuglsang 2013 (doi 10.1208/s12248-013-9475-5) target power 90%"),
-                        "\nMethod C/D. GMR 0.90:",
-                        "\nTable I. Maximum TIE at n1 12 and CV 20%: 0.0501\n")
+                               "\nFuglsang 2013 (doi 10.1208/s12248-013-9475-5) target power 90%"),
+                   "\nMethod C/D. GMR 0.90:",
+                   "\nTable I. Maximum TIE at n1 12 and CV 20%: 0.0501\n")
     }
     if (expl == 12) {
       txt <- paste(txt, paste0("internal expl == 12\n", hr,
-                        "\nFuglsang 2014 (doi 10.1208/s12248-014-9571-1) target power 80%"),
-                        "\nParallel groups. Method C. GMR 0.95:",
-                        "\nTable II. At n1 120 and CV 40%: TIE 0.0454, power 0.830\n")
+                               "\nFuglsang 2014 (doi 10.1208/s12248-014-9571-1) target power 80%"),
+                   "\nParallel groups. Method C. GMR 0.95:",
+                   "\nTable II. At n1 120 and CV 40%: TIE 0.0454, power 0.830\n")
     }
     if (expl == 13) {
       txt <- paste(txt, paste0("internal expl == 12\n", hr,
-                        "\nKaralis/Macheras 2013 (doi 10.1007/s11095-013-1026-3) target power 80%"),
-                        "\nAdaptive TSD (modified C):",
-                        "\nTable II. TIE at n1 12 and CV 20%: 0.0446 (100,000 simulations)\n")
+                               "\nKaralis/Macheras 2013 (doi 10.1007/s11095-013-1026-3) target power 80%"),
+                   "\nAdaptive TSD (modified C):",
+                   "\nTable II. TIE at n1 12 and CV 20%: 0.0446 (100,000 simulations)\n")
     }
     if (expl == 14) {
       txt <- paste(txt, paste0("internal expl == 14\n", hr,
-                        "\nBEBAC 0110804, target power 80%, BE in the interim."),
-                        "\nPhoenix/WinNonlin (subject=random), PowerTOST (method=\"exact\").",
-                        "\nMethod C. Reported results (power for GMR 0.95):",
-                        "\nInterim analyis: 90.00% CI: 99.07\u2013111.85% (power 99.90%)",
-                        "\nFinal analysis : NA (stopped in the interim)\n")
+                               "\nBEBAC 0110804, target power 80%, BE in the interim."),
+                   "\nPhoenix/WinNonlin (subject=random), PowerTOST (method=\"exact\").",
+                   "\nMethod C. Reported results (power for GMR 0.95):",
+                   "\nInterim analyis: 90.00% CI: 99.07\u2013111.85% (power 99.90%)",
+                   "\nFinal analysis : NA (stopped in the interim)\n")
     }
   }
   cond <- paste(txt,
-    "\nStudy conditions and assessment of empiric Type I Error",
-    paste0("\n", paste0(rep("\u2500", 60), collapse="")),
-    "\nDesign             :")
+                "\nStudy conditions and assessment of empiric Type I Error",
+                paste0("\n", paste0(rep("\u2500", 60), collapse="")),
+                "\nDesign             :")
   if (design == "2x2x2") {
     cond <- paste(cond, "2\u00D72\u00D72 crossover")
   } else {
@@ -1150,48 +1152,48 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   cond <- paste(cond, "\nTSD Type           :", des.type)
   if (outside.range) {
     cond <- paste(cond,
-    "\nWarning            : At least one of the study conditions",
-    "\n                     is outside the validated range of the",
-    "\n                     reference\u2019s method.")
+                  "\nWarning            : At least one of the study conditions",
+                  "\n                     is outside the validated range of the",
+                  "\n                     reference\u2019s method.")
   }
   cond <- paste(cond,
-    "\nTarget power       :", sprintf("%.2f", target),
-    "\nGMR used           :", GMR.used,
-    "\nInterim power check:", pwr.check,
-    "\nFutility criterion :", fC.check,
-    "\nMinimum n2         :", n2.check,
-    "\nMaximum N          :", maxN.check)
+                "\nTarget power       :", sprintf("%.2f", target),
+                "\nGMR used           :", GMR.used,
+                "\nInterim power check:", pwr.check,
+                "\nFutility criterion :", fC.check,
+                "\nMinimum n2         :", n2.check,
+                "\nMaximum N          :", maxN.check)
   if (asym) {
     if (type == 1) {
       cond <- paste(cond, "\nSpecified \u03B1 1, 2   :",
-                   sprintf("%.4f, %.4f", alpha1, alpha2),
-                   "\nSpecified CIs      :",
-                   sprintf("%.2f%%, %.2f%%",
-                           100*(1-2*alpha1), 100*(1-2*alpha2)))
+                    sprintf("%.4f, %.4f", alpha1, alpha2),
+                    "\nSpecified CIs      :",
+                    sprintf("%.2f%%, %.2f%%",
+                            100*(1-2*alpha1), 100*(1-2*alpha2)))
     } else {
       cond <- paste(cond, "\nSpecified \u03B1 1, 2   :",
-                   paste0(sprintf("%.3f", alpha0), "|",
-                          sprintf("%.4f, %.4f", alpha1, alpha2)),
-                   "\nSpecified CIs      :",
-                   paste0(sprintf("%.2f%%", 100*(1-2*alpha0)), "|",
-                          sprintf("%.2f%%, %.2f%%",
-                          100*(1-2*alpha1), 100*(1-2*alpha2))))
+                    paste0(sprintf("%.3f", alpha0), "|",
+                           sprintf("%.4f, %.4f", alpha1, alpha2)),
+                    "\nSpecified CIs      :",
+                    paste0(sprintf("%.2f%%", 100*(1-2*alpha0)), "|",
+                           sprintf("%.2f%%, %.2f%%",
+                                   100*(1-2*alpha1), 100*(1-2*alpha2))))
     }
   } else {
     if (type == 1) {
       cond <- paste(cond, "\nSpecified \u03B1 1, 2   :",
-                   sprintf("%.4f, %.4f", alpha1, alpha2),
-                   "\nSpecified CIs      :",
-                   sprintf("%.2f%%, %.2f%%",
-                           100*(1-2*alpha1), 100*(1-2*alpha2)))
+                    sprintf("%.4f, %.4f", alpha1, alpha2),
+                    "\nSpecified CIs      :",
+                    sprintf("%.2f%%, %.2f%%",
+                            100*(1-2*alpha1), 100*(1-2*alpha2)))
     } else {
       cond <- paste(cond, "\nSpecified \u03B1 1, 2   :",
-                   paste0(sprintf("%.3f", alpha0), "|",
-                          sprintf("%.4f, %.4f", alpha1, alpha2)),
-                   "\nSpecified CIs      :",
-                   paste0(sprintf("%.2f%%", 100*(1-2*alpha0)), "|",
-                          sprintf("%.2f%%, %.2f%%",
-                          100*(1-2*alpha1), 100*(1-2*alpha2))))
+                    paste0(sprintf("%.3f", alpha0), "|",
+                           sprintf("%.4f, %.4f", alpha1, alpha2)),
+                    "\nSpecified CIs      :",
+                    paste0(sprintf("%.2f%%", 100*(1-2*alpha0)), "|",
+                           sprintf("%.2f%%, %.2f%%",
+                                   100*(1-2*alpha1), 100*(1-2*alpha2))))
     }
   }
 
@@ -1225,7 +1227,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
     TIE.CI1 <- binom.test(TIE.interim.est*nsims, nsims, alternative="two.sided")$conf.int[1:2]
     # Inflated TIE for specified alpha(s)?
     justif <- paste("\n\nTIE for specified \u03B1:", sprintf("%1.5f",
-                    TIE.interim.est))
+                                                             TIE.interim.est))
 
     if (TIE.interim.est <= alpha0) { # yes
       justif <- paste(justif, "(\u22640.05)", "\n                    ",
@@ -1240,15 +1242,15 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
     }
     if (CIs) {
       CI1.txt <- paste("\n                     95% CI:",
-                      sprintf("%1.5f%s%1.5f", TIE.CI1[1], "\u2013", TIE.CI1[2]))
+                       sprintf("%1.5f%s%1.5f", TIE.CI1[1], "\u2013", TIE.CI1[2]))
     }
     if (type == 1) { # Method B, E, KM TSD-1, MSDBE, Haybittle/Peto,...
       interim <- paste0("\n\nInterim analysis (specified \u03B11 ", alpha1, ")")
       interim <- paste0(interim, paste0("\n",
-                        paste0(rep("\u2500", 52), collapse="")))
+                                        paste0(rep("\u2500", 52), collapse="")))
       # In Type 1 BE is based on alpha1
       BE.interim.spec <- round(100*CI.BE(alpha=alpha1, pe=PE1, CV=CV1,
-                               n=n1, design=design), 2)
+                                         n=n1, design=design), 2)
       if (BE.interim.spec[["lower"]] >= 80 &
           BE.interim.spec[["upper"]] <= 125) {
         BE.interim.spec.assess <- pass
@@ -1256,11 +1258,11 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
         BE.interim.spec.assess <- fail
       }
       interim <- paste(interim,
-        sprintf("%s%.2f%%%s", "\n", 100*(1-2*alpha1), " CI:"),
-        sprintf("%.2f%s%.2f%%", BE.interim.spec[["lower"]], "\u2013",
-                                BE.interim.spec[["upper"]]),
-        BE.interim.spec.assess,
-        "\nPower    :", sprintf("%1.4f", pwr.interim.calc), pverbose)
+                       sprintf("%s%.2f%%%s", "\n", 100*(1-2*alpha1), " CI:"),
+                       sprintf("%.2f%s%.2f%%", BE.interim.spec[["lower"]], "\u2013",
+                               BE.interim.spec[["upper"]]),
+                       BE.interim.spec.assess,
+                       "\nPower    :", sprintf("%1.4f", pwr.interim.calc), pverbose)
     } else {         # Method C, D, C/D, F, KM TSD, KM TSD-2
       if (!KM) { # Conventional (fixed).
         pwr.interim.calc <- power.TOST(alpha=alpha0, theta0=GMR, CV=CV1,
@@ -1276,11 +1278,11 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
         interim <- paste0(interim, "1 ", alpha1, ")")
       }
       interim <- paste0(interim, paste0("\n",
-                        paste0(rep("\u2500", 52), collapse="")))
+                                        paste0(rep("\u2500", 52), collapse="")))
       # If at least the target power, assess BE with alpha0.
       if (pwr.interim.calc >= target) {
         BE.interim.spec0 <- round(100*CI.BE(alpha=alpha0, pe=PE1, CV=CV1,
-                                  n=n1, design=design), 2)
+                                            n=n1, design=design), 2)
         if (BE.interim.spec0[["lower"]] >= 80 &
             BE.interim.spec0[["upper"]] <= 125) {
           BE.interim.spec.assess <- pass
@@ -1288,15 +1290,15 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
           BE.interim.spec.assess <- fail
         }
         interim <- paste(interim,
-          sprintf("%s%.2f%%%s", "\n", 100*(1-2*alpha0), " CI:"),
-          sprintf("%.2f%s%.2f%%", BE.interim.spec0[["lower"]], "\u2013",
-                                BE.interim.spec0[["upper"]]),
-          BE.interim.spec.assess,
-          "\nPower    :", sprintf("%1.4f", pwr.interim.calc), pverbose)
-      # If less than the target power, assess BE with alpha1.
+                         sprintf("%s%.2f%%%s", "\n", 100*(1-2*alpha0), " CI:"),
+                         sprintf("%.2f%s%.2f%%", BE.interim.spec0[["lower"]], "\u2013",
+                                 BE.interim.spec0[["upper"]]),
+                         BE.interim.spec.assess,
+                         "\nPower    :", sprintf("%1.4f", pwr.interim.calc), pverbose)
+        # If less than the target power, assess BE with alpha1.
       } else {
         BE.interim.spec1 <- round(100*CI.BE(alpha=alpha1, pe=PE1, CV=CV1,
-                                  n=n1, design=design), 2)
+                                            n=n1, design=design), 2)
         if (BE.interim.spec1[["lower"]] >= 80 &
             BE.interim.spec1[["upper"]] <= 125) {
           BE.interim.spec.assess <- pass
@@ -1304,27 +1306,27 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
           BE.interim.spec.assess <- fail
         }
         interim <- paste(interim,
-          sprintf("%s%.2f%%%s", "\n", 100*(1-2*alpha1), " CI:"),
-          sprintf("%.2f%s%.2f%%", BE.interim.spec1[["lower"]], "\u2013",
-                                  BE.interim.spec1[["upper"]]),
-          BE.interim.spec.assess,
-          "\nPower    :", sprintf("%1.4f", pwr.interim.calc), pverbose)
+                         sprintf("%s%.2f%%%s", "\n", 100*(1-2*alpha1), " CI:"),
+                         sprintf("%.2f%s%.2f%%", BE.interim.spec1[["lower"]], "\u2013",
+                                 BE.interim.spec1[["upper"]]),
+                         BE.interim.spec.assess,
+                         "\nPower    :", sprintf("%1.4f", pwr.interim.calc), pverbose)
       }
     }
     txt <- paste(cond, "\n\nData for the interim analysis",
-    paste0("\n", paste0(rep("\u2500", 41), collapse="")),
-    "\nCV (MSE)           :", sprintf("%6.2f%% (%.6g)", 100*CV1,
-                                        CV2mse(CV1)),
-    "\nPE (ln(T)\u2013ln(R))   :", sprintf("%6.2f%% (%.6g)", 100*PE1,
-                                        log(PE1)),
-    "\nSample size        :", sprintf("%3i", sum(n1)))
+                 paste0("\n", paste0(rep("\u2500", 41), collapse="")),
+                 "\nCV (MSE)           :", sprintf("%6.2f%% (%.6g)", 100*CV1,
+                                                   CV2mse(CV1)),
+                 "\nPE (ln(T)\u2013ln(R))   :", sprintf("%6.2f%% (%.6g)", 100*PE1,
+                                                        log(PE1)),
+                 "\nSample size        :", sprintf("%3i", sum(n1)))
     txt <- paste(txt, "\n\nStudy stopped in stage 1 (interim \u2192 pivotal).",
                  justif)
     txt <- paste(txt, interim,
-    paste0("\n\n\u250C", paste0(rep("\u2500", 53), collapse=""), "\u2510",
-    "\n\u2502 Since no inflation of the Type I Error is expected, \u2502",
-    "\n\u2502 can accept the reported analysis.                   \u2502",
-    "\n\u2514", paste0(rep("\u2500", 53), collapse=""), "\u2518\n"))
+                 paste0("\n\n\u250C", paste0(rep("\u2500", 53), collapse=""), "\u2510",
+                        "\n\u2502 Since no inflation of the Type I Error is expected, \u2502",
+                        "\n\u2502 can accept the reported analysis.                   \u2502",
+                        "\n\u2514", paste0(rep("\u2500", 53), collapse=""), "\u2518\n"))
     cat(txt, "\n")
     return(invisible("done"))
   }
@@ -1388,7 +1390,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
       } else {
         fit    <- "quadratic"
         det    <- sqrt((coef(mod2)[[2]]/2/coef(mod2)[[3]])^2-
-                       (coef(mod2)[[1]]-alpha0)/coef(mod2)[[3]])
+                         (coef(mod2)[[1]]-alpha0)/coef(mod2)[[3]])
         if (coef(mod2)[[3]] < 0) { # convex shape.
           best <- -(coef(mod2)[[2]]/2/coef(mod2)[[3]] + det)
         } else {                   # concave shape.
@@ -1397,19 +1399,19 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
         points(sort(alpha.set), sort(fitted(mod2)), type="l", col="red")
       }
       legend("topleft", inset=0.02, bg="white", box.lty=0, y.intersp=1.25,
-        legend=c(
-        paste0("\u03b1-range (fixed seed; ", fit, " fit)"),
-        "optimized \u03b1",
-        "fitted \u03b1",
-        "significance limit",
-        "target"),
-        pch=c(rep(21, 3), NA, NA),
-        pt.cex=c(1.25, rep(2, 2), 0, 0),
-        col=c("#FF0000AA", "blue", "black", "red", "black"),
-        pt.bg=c("#FFD700AA", rep(NA, 4)),
-        lty=c(1, 1, 1, 2, 1))
+             legend=c(
+               paste0("\u03b1-range (fixed seed; ", fit, " fit)"),
+               "optimized \u03b1",
+               "fitted \u03b1",
+               "significance limit",
+               "target"),
+             pch=c(rep(21, 3), NA, NA),
+             pt.cex=c(1.25, rep(2, 2), 0, 0),
+             col=c("#FF0000AA", "blue", "black", "red", "black"),
+             pt.bg=c("#FFD700AA", rep(NA, 4)),
+             lty=c(1, 1, 1, 2, 1))
       points(alpha.set, TIE.set, cex=1.25, pch=21,
-        col="#FF0000AA", bg="#FFD700AA")
+             col="#FF0000AA", bg="#FFD700AA")
       abline(v=best)
       points(x$root, TIE, cex=2, pch=21, col="blue", bg=NA)
       if (!asym) { # Same adjusted alphas in both stages.
@@ -1443,7 +1445,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   # Collect data for console output.
   # Inflated TIE for specified alpha(s)?
   justif <- paste("\n\nTIE for specified \u03B1:", sprintf("%1.5f",
-                  TIE.interim.est))
+                                                           TIE.interim.est))
   if (TIE.interim.est <= alpha0) { # yes
     justif <- paste(justif, "(\u22640.05)", "\n                    ",
                     "Applied adjustment is justified.")
@@ -1470,10 +1472,10 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
                                    method=pmethod, design=design)
     interim <- paste0("\n\nInterim analysis (specified \u03B11 ", alpha1, ")")
     interim <- paste0(interim, paste0("\n",
-                      paste0(rep("\u2500", 52), collapse="")))
+                                      paste0(rep("\u2500", 52), collapse="")))
     # In Type 1 BE is based on alpha1
     BE.interim.spec <- round(100*CI.BE(alpha=alpha1, pe=PE1, CV=CV1,
-                             n=n1, design=design), 2)
+                                       n=n1, design=design), 2)
     if (BE.interim.spec[["lower"]] >= 80 &
         BE.interim.spec[["upper"]] <= 125) {
       BE.interim.spec.assess <- pass
@@ -1481,16 +1483,16 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
       BE.interim.spec.assess <- fail
     }
     interim <- paste(interim,
-      sprintf("%s%.2f%%%s", "\n", 100*(1-2*alpha1), " CI:"),
-      sprintf("%.2f%s%.2f%%", BE.interim.spec[["lower"]], "\u2013",
-                              BE.interim.spec[["upper"]]),
-      BE.interim.spec.assess,
-      "\nPower    :", sprintf("%1.4f", pwr.interim.calc), pverbose)
+                     sprintf("%s%.2f%%%s", "\n", 100*(1-2*alpha1), " CI:"),
+                     sprintf("%.2f%s%.2f%%", BE.interim.spec[["lower"]], "\u2013",
+                             BE.interim.spec[["upper"]]),
+                     BE.interim.spec.assess,
+                     "\nPower    :", sprintf("%1.4f", pwr.interim.calc), pverbose)
     if (pwr.interim.calc >= target &
         BE.interim.spec.assess == fail) {
       interim <- paste(interim,
-      "\nStudy should have been stopped (\u2265 target power) and",
-      "\nconclusions based on the interim.\n")
+                       "\nStudy should have been stopped (\u2265 target power) and",
+                       "\nconclusions based on the interim.\n")
     } else { # Lower than target power and not BE. Proceed to stage 2.
       if (!usePE) { # Use fixed GMR.
         n2.spec <- sampleN.TOST(alpha=alpha2, CV=CV1, theta0=GMR,
@@ -1504,8 +1506,8 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
                                 print=FALSE)[["Sample size"]] - n1
       }
       interim <- paste(interim, sprintf("%s %i %s%i%s",
-      "\nSecond stage with", n2.spec, "subjects (N=", n1 + n2.spec,
-      ") is justified.\n"))
+                                        "\nSecond stage with", n2.spec, "subjects (N=", n1 + n2.spec,
+                                        ") is justified.\n"))
     }
   } else { # Type 2
     if (!KM) { # Conventional (fixed).
@@ -1522,11 +1524,11 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
       interim <- paste0(interim, "1 ", alpha1, ")")
     }
     interim <- paste0(interim, paste0("\n",
-                      paste0(rep("\u2500", 52), collapse="")))
+                                      paste0(rep("\u2500", 52), collapse="")))
     # If at least the target power, assess BE with alpha0.
     if (pwr.interim.calc >= target) {
       BE.interim.spec0 <- round(100*CI.BE(alpha=alpha0, pe=PE1, CV=CV1,
-                                n=n1, design=design), 2)
+                                          n=n1, design=design), 2)
       if (BE.interim.spec0[["lower"]] >= 80 &
           BE.interim.spec0[["upper"]] <= 125) {
         BE.interim.spec.assess <- pass
@@ -1534,15 +1536,15 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
         BE.interim.spec.assess <- fail
       }
       interim <- paste(interim,
-        sprintf("%s%.2f%%%s", "\n", 100*(1-2*alpha0), " CI:"),
-        sprintf("%.2f%s%.2f%%", BE.interim.spec0[["lower"]], "\u2013",
-                                BE.interim.spec0[["upper"]]),
-        BE.interim.spec.assess,
-        "\nPower    :", sprintf("%1.4f", pwr.interim.calc), pverbose)
-    # If less than the target power, assess BE with alpha1.
+                       sprintf("%s%.2f%%%s", "\n", 100*(1-2*alpha0), " CI:"),
+                       sprintf("%.2f%s%.2f%%", BE.interim.spec0[["lower"]], "\u2013",
+                               BE.interim.spec0[["upper"]]),
+                       BE.interim.spec.assess,
+                       "\nPower    :", sprintf("%1.4f", pwr.interim.calc), pverbose)
+      # If less than the target power, assess BE with alpha1.
     } else {
       BE.interim.spec1 <- round(100*CI.BE(alpha=alpha1, pe=PE1, CV=CV1,
-                                n=n1, design=design), 2)
+                                          n=n1, design=design), 2)
       if (BE.interim.spec1[["lower"]] >= 80 &
           BE.interim.spec1[["upper"]] <= 125) {
         BE.interim.spec.assess <- pass
@@ -1550,16 +1552,16 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
         BE.interim.spec.assess <- fail
       }
       interim <- paste(interim,
-        sprintf("%s%.2f%%%s", "\n", 100*(1-2*alpha1), " CI:"),
-        sprintf("%.2f%s%.2f%%", BE.interim.spec1[["lower"]], "\u2013",
-                                BE.interim.spec1[["upper"]]),
-        BE.interim.spec.assess,
-        "\nPower    :", sprintf("%1.4f", pwr.interim.calc), pverbose)
+                       sprintf("%s%.2f%%%s", "\n", 100*(1-2*alpha1), " CI:"),
+                       sprintf("%.2f%s%.2f%%", BE.interim.spec1[["lower"]], "\u2013",
+                               BE.interim.spec1[["upper"]]),
+                       BE.interim.spec.assess,
+                       "\nPower    :", sprintf("%1.4f", pwr.interim.calc), pverbose)
     }
     if (pwr.interim.calc >= target & BE.interim.spec.assess == fail) {
       interim <- paste(interim,
-      "\nStudy should have been stopped (\u2265 target power) and",
-      "\nconclusions based on the interim.\n")
+                       "\nStudy should have been stopped (\u2265 target power) and",
+                       "\nconclusions based on the interim.\n")
     } else { # Lower than target power and not BE. Proceed to stage 2.
       if (!usePE) { # Use fixed GMR.
         n2.spec <- sampleN.TOST(alpha=alpha2, CV=CV1, theta0=GMR,
@@ -1573,8 +1575,8 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
                                 print=FALSE)[["Sample size"]] - n1
       }
       interim <- paste(interim, sprintf("%s %i %s%i%s",
-      "\nSecond stage with", n2.spec, "subjects (N=", n1 + n2.spec,
-      ") is justified.\n"))
+                                        "\nSecond stage with", n2.spec, "subjects (N=", n1 + n2.spec,
+                                        ") is justified.\n"))
     }
   }
 
@@ -1582,31 +1584,31 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   if (fC.check != "none") {
     if ((KM | design == "parallel") & (n1+n2.spec > Nmax)) {
       interim <- paste(interim, paste0(
-      "\nTotal sample size (", n1+n2.spec, ") > Nmax (", Nmax, "); the",
-      "\nstudy should have been stopped for futility.\n"))
+        "\nTotal sample size (", n1+n2.spec, ") > Nmax (", Nmax, "); the",
+        "\nstudy should have been stopped for futility.\n"))
     }
     if ((fCrit == "PE" | KM) & (PE1 < fClow | PE1 > 1/fClow)) {
       interim <- paste(interim, paste0(
-      "\nPE outside specified range of [",
-      sprintf("%.4f, %.4f", fClow, 1/fClow), "];",
-      "\nthe study should have been stopped for futility.\n"))
+        "\nPE outside specified range of [",
+        sprintf("%.4f, %.4f", fClow, 1/fClow), "];",
+        "\nthe study should have been stopped for futility.\n"))
     }
     if (fCrit == "CI") {
       if (type == 1) {
         if (BE.interim.spec[["upper"]] < 100*fClow |
             BE.interim.spec[["lower"]] > 100/fClow) {
           interim <- paste(interim, paste0(
-          "\nCI outside specified range of [",
-          sprintf("%.4f, %.4f", fClow, 1/fClow), "];",
-          "\nthe study should have been stopped for futility.\n"))
+            "\nCI outside specified range of [",
+            sprintf("%.4f, %.4f", fClow, 1/fClow), "];",
+            "\nthe study should have been stopped for futility.\n"))
         }
       } else {
         if (BE.interim.spec1[["upper"]] < 100*fClow |
             BE.interim.spec1[["lower"]] > 100/fClow) {
           interim <- paste(interim, paste0(
-          "\nCI outside specified range of [",
-          sprintf("%.4f, %.4f", fClow, 1/fClow), "];",
-          "\nthe study should have been stopped for futility.\n"))
+            "\nCI outside specified range of [",
+            sprintf("%.4f, %.4f", fClow, 1/fClow), "];",
+            "\nthe study should have been stopped for futility.\n"))
         }
       }
     }
@@ -1622,7 +1624,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
       interim.adj <- paste0("\n\nInterim analysis (adjusted \u03B11 ",
                             round(adj[1], 5), ")")
       interim.adj <- paste0(interim.adj, paste0("\n",
-                            paste0(rep("\u2500", 52), collapse="")))
+                                                paste0(rep("\u2500", 52), collapse="")))
       # In Type 1 BE is based on alpha1
       BE.interim.adj <- round(100*CI.BE(alpha=adj[1], pe=PE1, CV=CV1,
                                         n=n1, design=design), 2)
@@ -1633,16 +1635,16 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
         BE.interim.adj.assess <- fail
       }
       interim.adj <- paste(interim.adj,
-        sprintf("%s%.2f%%%s", "\n", 100*(1-2*adj[1]), " CI:"),
-        sprintf("%.2f%s%.2f%%", BE.interim.adj[["lower"]], "\u2013",
-                                BE.interim.adj[["upper"]]),
-        BE.interim.adj.assess,
-        "\nPower    :", sprintf("%1.4f", pwr.interim.calc), pverbose)
+                           sprintf("%s%.2f%%%s", "\n", 100*(1-2*adj[1]), " CI:"),
+                           sprintf("%.2f%s%.2f%%", BE.interim.adj[["lower"]], "\u2013",
+                                   BE.interim.adj[["upper"]]),
+                           BE.interim.adj.assess,
+                           "\nPower    :", sprintf("%1.4f", pwr.interim.calc), pverbose)
       if (pwr.interim.calc >= target &
           BE.interim.adj.assess == fail) {
         interim.adj <- paste(interim.adj,
-        "\nStudy should have been stopped (\u2265 target power) and",
-        "\nconclusions based on the interim.\n")
+                             "\nStudy should have been stopped (\u2265 target power) and",
+                             "\nconclusions based on the interim.\n")
       } else { # Lower than target power and not BE. Proceed to stage 2.
         if (!usePE) { # Use fixed GMR.
           n2.adj <- sampleN.TOST(alpha=adj[2], CV=CV1, theta0=GMR,
@@ -1656,8 +1658,8 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
                                  print=FALSE)[["Sample size"]] - n1
         }
         interim.adj <- paste(interim.adj, sprintf("%s %i %s%i%s",
-        "\nSecond stage with", n2.adj, "subjects (N=", n1 + n2.adj,
-        ") is justified.\n"))
+                                                  "\nSecond stage with", n2.adj, "subjects (N=", n1 + n2.adj,
+                                                  ") is justified.\n"))
       }
     } else { # Type 2
       pwr.interim.calc <- power.TOST(alpha=alpha0, theta0=GMR, CV=CV1, n=n1,
@@ -1669,7 +1671,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
         interim.adj <- paste0(interim.adj, "1 ", round(adj[1], 5), ")")
       }
       interim.adj <- paste0(interim.adj, paste0("\n",
-                            paste0(rep("\u2500", 52), collapse="")))
+                                                paste0(rep("\u2500", 52), collapse="")))
       # If at least the target power, assess BE with alpha0.
       if (pwr.interim.calc >= target) {
         BE.interim.adj0 <- round(100*CI.BE(alpha=alpha0, pe=PE1, CV=CV1,
@@ -1681,12 +1683,12 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
           BE.interim.adj.assess <- fail
         }
         interim.adj <- paste(interim.adj,
-          sprintf("%s%.2f%%%s", "\n", 100*(1-2*alpha0), " CI:"),
-          sprintf("%.2f%s%.2f%%", BE.interim.adj0[["lower"]], "\u2013",
-                                  BE.interim.adj0[["upper"]]),
-          BE.interim.adj.assess,
-          "\nPower    :", sprintf("%1.4f", pwr.interim.calc), pverbose)
-      # If less than the target power, assess BE with adjusted alpha1.
+                             sprintf("%s%.2f%%%s", "\n", 100*(1-2*alpha0), " CI:"),
+                             sprintf("%.2f%s%.2f%%", BE.interim.adj0[["lower"]], "\u2013",
+                                     BE.interim.adj0[["upper"]]),
+                             BE.interim.adj.assess,
+                             "\nPower    :", sprintf("%1.4f", pwr.interim.calc), pverbose)
+        # If less than the target power, assess BE with adjusted alpha1.
       } else {
         BE.interim.adj1 <- round(100*CI.BE(alpha=adj[1], pe=PE1, CV=CV1,
                                            n=n1, design=design), 2)
@@ -1697,16 +1699,16 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
           BE.interim.adj.assess <- fail
         }
         interim.adj <- paste(interim.adj,
-          sprintf("%s%.2f%%%s", "\n", 100*(1-2*adj[1]), " CI:"),
-          sprintf("%.2f%s%.2f%%", BE.interim.adj1[["lower"]], "\u2013",
-                                  BE.interim.adj1[["upper"]]),
-          BE.interim.adj.assess,
-          "\nPower    :", sprintf("%1.4f", pwr.interim.calc), pverbose)
+                             sprintf("%s%.2f%%%s", "\n", 100*(1-2*adj[1]), " CI:"),
+                             sprintf("%.2f%s%.2f%%", BE.interim.adj1[["lower"]], "\u2013",
+                                     BE.interim.adj1[["upper"]]),
+                             BE.interim.adj.assess,
+                             "\nPower    :", sprintf("%1.4f", pwr.interim.calc), pverbose)
       }
       if (pwr.interim.calc >= target & BE.interim.adj.assess == fail) {
         interim.adj <- paste(interim.adj,
-        "\nStudy should have been stopped (\u2265 target power) and",
-        "\nconclusions based on the interim.\n")
+                             "\nStudy should have been stopped (\u2265 target power) and",
+                             "\nconclusions based on the interim.\n")
       } else { # Lower than target power and not BE. Proceed to stage 2.
         if (!usePE) { # Use fixed GMR.
           n2.adj <- sampleN.TOST(alpha=adj[2], CV=CV1, theta0=GMR,
@@ -1720,8 +1722,8 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
                                  print=FALSE)[["Sample size"]] - n1
         }
         interim.adj <- paste(interim.adj, sprintf("%s %i %s%i%s",
-        "\nSecond stage with", n2.adj, "subjects (N=", n1 + n2.adj,
-        ") is justified.\n"))
+                                                  "\nSecond stage with", n2.adj, "subjects (N=", n1 + n2.adj,
+                                                  ") is justified.\n"))
       }
     }
 
@@ -1729,31 +1731,31 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
     if (fC.check != "none") {
       if ((KM | design == "parallel") & (n1+n2.adj > Nmax)) {
         interim.adj <- paste(interim.adj, paste0(
-        "\nTotal sample size (", n1+n2.adj, ") > Nmax (", Nmax, "); the",
-        "\nstudy should have been stopped for futility.\n"))
+          "\nTotal sample size (", n1+n2.adj, ") > Nmax (", Nmax, "); the",
+          "\nstudy should have been stopped for futility.\n"))
       }
       if ((fCrit == "PE" | KM) & (PE1 < fClow | PE1 > 1/fClow)) {
         interim.adj <- paste(interim.adj, paste0(
-        "\nPE outside specified range of [",
-        sprintf("%.4f, %.4f", fClow, 1/fClow), "];",
-        "\nthe study should have been stopped for futility.\n"))
+          "\nPE outside specified range of [",
+          sprintf("%.4f, %.4f", fClow, 1/fClow), "];",
+          "\nthe study should have been stopped for futility.\n"))
       }
       if (fCrit == "CI") {
         if (type == 1) {
           if (BE.interim.adj[["upper"]] < 100*fClow |
               BE.interim.adj[["lower"]] > 100/fClow) {
             interim.adj <- paste(interim.adj, paste0(
-            "\nCI outside specified range of [",
-            sprintf("%.4f, %.4f", fClow, 1/fClow), "];",
-            "\nthe study should have been stopped for futility.\n"))
+              "\nCI outside specified range of [",
+              sprintf("%.4f, %.4f", fClow, 1/fClow), "];",
+              "\nthe study should have been stopped for futility.\n"))
           }
         } else {
           if (BE.interim.adj1[["upper"]] < 100*fClow |
               BE.interim.adj1[["lower"]] > 100/fClow) {
             interim.adj <- paste(interim.adj, paste0(
-            "\nCI outside specified range of [",
-            sprintf("%.4f, %.4f", fClow, 1/fClow), "];",
-            "\nthe study should have been stopped for futility.\n"))
+              "\nCI outside specified range of [",
+              sprintf("%.4f, %.4f", fClow, 1/fClow), "];",
+              "\nthe study should have been stopped for futility.\n"))
           }
         }
       }
@@ -1771,7 +1773,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
     BE.spec.assess <- fail
   }
   BE.adj.assess <- BE.spec.assess # Workaround to allow final
-                                  # assessment in the output.
+  # assessment in the output.
   if (valid) { # Only in validation: irrelevant post-hoc power
     # Suppress messages regarding unbalanced designs.
     suppressMessages(
@@ -1804,9 +1806,9 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
     par(mar=c(c(3, 3, 2.5, 0))+0.1, cex.main=1.1, cex.axis=0.95,
         mgp=c(2, 0.75, 0), las=1, lend="square", tcl=-0.3)
     par(mfrow=c(1, 2), oma=c(0, 0, 2, 0 )) # split layout into 3 parts
-                                           # top (entire width) for title
-                                           # 50:50 below for N plots
-                                           # 2 lines for the title
+    # top (entire width) for title
+    # 50:50 below for N plots
+    # 2 lines for the title
     # Axes common to both plots.
     xlim <- range(as.integer(c(names(pwr.interim.est$ntable),
                                names(pwr.interim.adj$ntable))))
@@ -1814,106 +1816,106 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
                        pwr.interim.adj$ntable/sum(pwr.interim.adj$ntable))))
     # First plot: Study data.
     plot(pwr.interim.est$ntable/sum(pwr.interim.est$ntable), col="blue",
-      xlim=xlim, ylim=ylim, xlab="N", lwd=3, ylab="Density",
-      main="Study\u2019s approach")
+         xlim=xlim, ylim=ylim, xlab="N", lwd=3, ylab="Density",
+         main="Study\u2019s approach")
     axis(2, labels=FALSE, tcl=-0.15,
-      at=seq(ylim[1], ylim[2], signif(median(diff(pretty(ylim))), 3)/5))
+         at=seq(ylim[1], ylim[2], signif(median(diff(pretty(ylim))), 3)/5))
     abline(v=c(pwr.interim.est$nmean, pwr.interim.est$nperc[2],
                range(pwr.interim.est$nperc)),
-      lty=c("solid", "dashed", rep("dotted", 2)))
+           lty=c("solid", "dashed", rep("dotted", 2)))
     legend("topright", legend=
-      c(paste0("average (", round(pwr.interim.est$nmean, 1), ")"),
-        paste0("median (", pwr.interim.est$nperc[[2]], ")"),
-        paste0("5, 95 percentiles (",
-          pwr.interim.est$nperc[[1]], ", ", pwr.interim.est$nperc[[3]], ")")),
-      bg="white", box.lty=0, inset=0.005, cex=0.95, y.intersp=1.15,
-      lty=c(1, 2, 3))
+             c(paste0("average (", round(pwr.interim.est$nmean, 1), ")"),
+               paste0("median (", pwr.interim.est$nperc[[2]], ")"),
+               paste0("5, 95 percentiles (",
+                      pwr.interim.est$nperc[[1]], ", ", pwr.interim.est$nperc[[3]], ")")),
+           bg="white", box.lty=0, inset=0.005, cex=0.95, y.intersp=1.15,
+           lty=c(1, 2, 3))
     # Second plot: Optimzed alpha(s).
     plot(pwr.interim.adj$ntable/sum(pwr.interim.adj$ntable), col="blue",
-      xlim=xlim, ylim=ylim, xlab="N", lwd=3, ylab="",
-      main="Optimized \u03B1")
+         xlim=xlim, ylim=ylim, xlab="N", lwd=3, ylab="",
+         main="Optimized \u03B1")
     axis(2, labels=FALSE, tcl=-0.15,
-      at=seq(ylim[1], ylim[2], signif(median(diff(pretty(ylim))), 3)/5))
+         at=seq(ylim[1], ylim[2], signif(median(diff(pretty(ylim))), 3)/5))
     abline(v=c(pwr.interim.adj$nmean, pwr.interim.adj$nperc[2],
                range(pwr.interim.adj$nperc)),
-      lty=c("solid", "dashed", rep("dotted", 2)))
+           lty=c("solid", "dashed", rep("dotted", 2)))
     legend("topright", legend=
-      c(paste0("average (", round(pwr.interim.adj$nmean, 1), ")"),
-        paste0("median (", pwr.interim.adj$nperc[[2]], ")"),
-        paste0("5, 95 percentiles (",
-          pwr.interim.adj$nperc[[1]], ", ", pwr.interim.adj$nperc[[3]], ")")),
-      bg="white", box.lty=0, inset=0.005,
-      cex=0.95, y.intersp=1.15, lty=c(1, 2, 3))
+             c(paste0("average (", round(pwr.interim.adj$nmean, 1), ")"),
+               paste0("median (", pwr.interim.adj$nperc[[2]], ")"),
+               paste0("5, 95 percentiles (",
+                      pwr.interim.adj$nperc[[1]], ", ", pwr.interim.adj$nperc[[3]], ")")),
+           bg="white", box.lty=0, inset=0.005,
+           cex=0.95, y.intersp=1.15, lty=c(1, 2, 3))
     # Title on top.
     title("Distribution of expected total sample size", cex.main=1.15,
-      outer=TRUE)
+          outer=TRUE)
     par(op) # reset options
   }
 
   # Collect results.
   txt <- paste(cond, "\n\nData for the interim analysis",
-    paste0("\n", paste0(rep("\u2500", 41), collapse="")),
-    "\nCV (MSE)           :", sprintf("%6.2f%% (%.6g)", 100*CV1,
-                                        CV2mse(CV1)),
-    "\nPE (ln(T)\u2013ln(R))   :", sprintf("%6.2f%% (%.6g)", 100*PE1,
-                                        log(PE1)),
-    "\nSample size        :", sprintf("%3i", sum(n1)),
-    "\n\nData for the final (pooled) analysis",
-    paste0("\n", paste0(rep("\u2500", 41), collapse="")),
-    "\nCV (MSE)           :", sprintf("%6.2f%% (%.6g)", 100*CV,
-                                        CV2mse(CV)),
-    "\nPE (ln(T)\u2013ln(R))   :", sprintf("%6.2f%% (%.6g)", 100*PE,
-                                        log(PE)),
-    "\nTotal sample size  :", sprintf("%3i", sum(N)))
+               paste0("\n", paste0(rep("\u2500", 41), collapse="")),
+               "\nCV (MSE)           :", sprintf("%6.2f%% (%.6g)", 100*CV1,
+                                                 CV2mse(CV1)),
+               "\nPE (ln(T)\u2013ln(R))   :", sprintf("%6.2f%% (%.6g)", 100*PE1,
+                                                      log(PE1)),
+               "\nSample size        :", sprintf("%3i", sum(n1)),
+               "\n\nData for the final (pooled) analysis",
+               paste0("\n", paste0(rep("\u2500", 41), collapse="")),
+               "\nCV (MSE)           :", sprintf("%6.2f%% (%.6g)", 100*CV,
+                                                 CV2mse(CV)),
+               "\nPE (ln(T)\u2013ln(R))   :", sprintf("%6.2f%% (%.6g)", 100*PE,
+                                                      log(PE)),
+               "\nTotal sample size  :", sprintf("%3i", sum(N)))
   txt <- paste(txt, justif, CI1.txt, interim)
   if (pa) {
     txt <- paste(txt, "\nPower based on interim data (specified \u03B1)")
     txt <- paste0(txt, paste0("\n",
-                      paste0(rep("\u2500", 50), collapse="")))
+                              paste0(rep("\u2500", 50), collapse="")))
     txt <- paste(txt,
-    "\nMethod             :", substr(pverbose, 2, nchar(pverbose)-1),
-    "\nStage 1            :", sprintf("%1.4f", pwr.interim.est$pBE_s1),
-    "\nExpected (based on simulations)",
-    "\nBoth stages        :", sprintf("%1.4f", pwr.interim.est$pBE),
-    "\nStudies in stage 2 :", sprintf("%.1f%%", pwr.interim.est$pct_s2),
-    "\nTotal sample size (N)",
-    "\n  Average          :", round(pwr.interim.est$nmean, 1),
-    "\n  Median           :", pwr.interim.est$nperc[[2]],
-    "\n  5, 95 percentiles:",
-    paste0(pwr.interim.est$nperc[[1]], ", ",
-           pwr.interim.est$nperc[[3]]), "\n")
+                 "\nMethod             :", substr(pverbose, 2, nchar(pverbose)-1),
+                 "\nStage 1            :", sprintf("%1.4f", pwr.interim.est$pBE_s1),
+                 "\nExpected (based on simulations)",
+                 "\nBoth stages        :", sprintf("%1.4f", pwr.interim.est$pBE),
+                 "\nStudies in stage 2 :", sprintf("%.1f%%", pwr.interim.est$pct_s2),
+                 "\nTotal sample size (N)",
+                 "\n  Average          :", round(pwr.interim.est$nmean, 1),
+                 "\n  Median           :", pwr.interim.est$nperc[[2]],
+                 "\n  5, 95 percentiles:",
+                 paste0(pwr.interim.est$nperc[[1]], ", ",
+                        pwr.interim.est$nperc[[3]]), "\n")
   }
   txt <- paste(txt, "\nFinal analysis of pooled data (specified \u03B12",
-    paste0(alpha2, ")"),
-    paste0("\n", paste0(rep("\u2550", 52), collapse="")),
-    sprintf("%s%.2f%%%s", "\n", 100*(1-2*alpha2), " CI:"),
-    sprintf("%.2f%s%.2f%%", BE.spec[["lower"]], "\u2013",
-                            BE.spec[["upper"]]), BE.spec.assess)
+               paste0(alpha2, ")"),
+               paste0("\n", paste0(rep("\u2550", 52), collapse="")),
+               sprintf("%s%.2f%%%s", "\n", 100*(1-2*alpha2), " CI:"),
+               sprintf("%.2f%s%.2f%%", BE.spec[["lower"]], "\u2013",
+                       BE.spec[["upper"]]), BE.spec.assess)
   if (valid) {
     txt <- paste(txt, "\nPost hoc power (irrelevant; for validation purposes)",
                  "\nBased on GMR       :", sprintf("%1.4f", ph.spec[1]),
                  "\nBased on PE        :", sprintf("%1.4f", ph.spec[2]))
   }
   if (BE.adj.assess == BE.spec.assess & TIE.interim.est <= alpha0) {
-      txt <- paste(txt,
-      paste0("\n\n\u250C", paste0(rep("\u2500", 53), collapse=""), "\u2510",
-      "\n\u2502 Since no inflation of the Type I Error is expected, \u2502",
-      "\n\u2502 can accept the reported analysis.                   \u2502",
-      "\n\u2514", paste0(rep("\u2500", 53), collapse=""), "\u2518\n"))
+    txt <- paste(txt,
+                 paste0("\n\n\u250C", paste0(rep("\u2500", 53), collapse=""), "\u2510",
+                        "\n\u2502 Since no inflation of the Type I Error is expected, \u2502",
+                        "\n\u2502 can accept the reported analysis.                   \u2502",
+                        "\n\u2514", paste0(rep("\u2500", 53), collapse=""), "\u2518\n"))
   }
   if (TIE.interim.est > alpha0 | (TIE.interim.est <= alpha0 & !skip)) {
     txt <- paste(txt,
-      "\n\n\u03B1-optimization (objective function: TIE \u2013 0.05 \u2192 0)",
-      paste0("\n", paste0(rep("\u2500", 54), collapse="")),
-      "\nMethod             :", substr(pverbose, 2, nchar(pverbose)-1),
-      "\nConvergence        :", x$iter, "iterations",
-      paste("(run-time", signif(run.time1[3]/60, 3), "min)"),
-      "\nEstimated precision:", sprintf("%.2E", x$estim.prec))
+                 "\n\n\u03B1-optimization (objective function: TIE \u2013 0.05 \u2192 0)",
+                 paste0("\n", paste0(rep("\u2500", 54), collapse="")),
+                 "\nMethod             :", substr(pverbose, 2, nchar(pverbose)-1),
+                 "\nConvergence        :", x$iter, "iterations",
+                 paste("(run-time", signif(run.time1[3]/60, 3), "min)"),
+                 "\nEstimated precision:", sprintf("%.2E", x$estim.prec))
     if (algo == 2) {
       txt <- paste(txt,
-      "\nAlgorithm 2        :", paste(fit, "fit near the estimate"),
-      "\n                    ", paste("(run-time", signif(run.time2[3]/60, 3),
-                                      "min)"))
+                   "\nAlgorithm 2        :", paste(fit, "fit near the estimate"),
+                   "\n                    ", paste("(run-time", signif(run.time2[3]/60, 3),
+                                                   "min)"))
     }
     if (type == 1 | asym) {
       txt <- paste(txt, "\nAdjusted \u03B1 1, 2    :",
@@ -1928,33 +1930,33 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
                    "\nAdjusted CIs       :",
                    paste0(sprintf("%.2f%%", 100*(1-2*alpha0)), "|",
                           sprintf("%.2f%%, %.2f%%",
-                          100*(1-2*adj[1]), 100*(1-2*adj[2]))))
+                                  100*(1-2*adj[1]), 100*(1-2*adj[2]))))
     }
     txt <- paste(txt,
-      "\n\nTIE for adjusted \u03B1 :", sprintf("%1.5f", TIE), infl, CI2.txt,
-      interim.adj)
+                 "\n\nTIE for adjusted \u03B1 :", sprintf("%1.5f", TIE), infl, CI2.txt,
+                 interim.adj)
     if (pa) {
       txt <- paste(txt, "\nPower based on interim data (adjusted \u03B1)")
       txt <- paste0(txt, paste0("\n", paste0(rep("\u2500", 50), collapse="")))
       txt <- paste(txt,
-      "\nMethod             :", substr(pverbose, 2, nchar(pverbose)-1),
-      "\nStage 1            :", sprintf("%1.4f", pwr.interim.adj$pBE_s1),
-      "\nExpected (based on simulations)",
-      "\nBoth stages        :", sprintf("%1.4f", pwr.interim.adj$pBE),
-      "\nStudies in stage 2 :", sprintf("%.1f%%", pwr.interim.adj$pct_s2),
-      "\nTotal sample size (N)",
-      "\n  Average          :", round(pwr.interim.adj$nmean, 1),
-      "\n  Median           :", pwr.interim.adj$nperc[[2]],
-      "\n  5, 95 percentiles:",
-      paste0(pwr.interim.adj$nperc[[1]], ", ",
-             pwr.interim.adj$nperc[[3]]), "\n")
+                   "\nMethod             :", substr(pverbose, 2, nchar(pverbose)-1),
+                   "\nStage 1            :", sprintf("%1.4f", pwr.interim.adj$pBE_s1),
+                   "\nExpected (based on simulations)",
+                   "\nBoth stages        :", sprintf("%1.4f", pwr.interim.adj$pBE),
+                   "\nStudies in stage 2 :", sprintf("%.1f%%", pwr.interim.adj$pct_s2),
+                   "\nTotal sample size (N)",
+                   "\n  Average          :", round(pwr.interim.adj$nmean, 1),
+                   "\n  Median           :", pwr.interim.adj$nperc[[2]],
+                   "\n  5, 95 percentiles:",
+                   paste0(pwr.interim.adj$nperc[[1]], ", ",
+                          pwr.interim.adj$nperc[[3]]), "\n")
     }
     txt <- paste(txt, "\nFinal analysis of pooled data (adjusted \u03B12",
-      paste0(round(adj[2], 5), ")"),
-      paste0("\n", paste0(rep("\u2550", 52), collapse="")),
-      sprintf("%s%.2f%%%s", "\n", 100*(1-2*adj[2]), " CI:"),
-      sprintf("%.2f%s%.2f%%", BE.adj[["lower"]], "\u2013",
-                              BE.adj[["upper"]]), BE.adj.assess)
+                 paste0(round(adj[2], 5), ")"),
+                 paste0("\n", paste0(rep("\u2550", 52), collapse="")),
+                 sprintf("%s%.2f%%%s", "\n", 100*(1-2*adj[2]), " CI:"),
+                 sprintf("%.2f%s%.2f%%", BE.adj[["lower"]], "\u2013",
+                         BE.adj[["upper"]]), BE.adj.assess)
     if (valid) {
       txt <- paste(txt, "\nPost hoc power (irrelevant; for validation purposes)",
                    "\nBased on GMR       :", sprintf("%1.4f", ph.adj[1]),
@@ -1962,31 +1964,31 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
     }
     if (BE.adj.assess == BE.spec.assess) {
       txt <- paste(txt,
-      paste0("\n\n\u250C", paste0(rep("\u2500", 43), collapse=""), "\u2510",
-      "\n\u2502 Since conclusions of both analyses agree, \u2502",
-      "\n\u2502 can accept the original analysis.         \u2502",
-      "\n\u2514", paste0(rep("\u2500", 43), collapse=""), "\u2518\n"))
+                   paste0("\n\n\u250C", paste0(rep("\u2500", 43), collapse=""), "\u2510",
+                          "\n\u2502 Since conclusions of both analyses agree, \u2502",
+                          "\n\u2502 can accept the original analysis.         \u2502",
+                          "\n\u2514", paste0(rep("\u2500", 43), collapse=""), "\u2518\n"))
     } else {
       if (BE.spec.assess == pass & BE.adj.assess == fail) {
         risk <- sprintf("%.1f%%.", 100*(TIE.interim.est-alpha0)/alpha0)
         txt <- paste(txt,
-          paste0("\n\n\u250C", paste0(rep("\u2500", 42+nchar(risk)), collapse=""), "\u2510",
-          "\n\u2502 Accepting the reported analysis could",
-          paste0(rep(" ", 4+nchar(risk)), collapse=""), "\u2502",
-          "\n\u2502 increase the relative consumer risk by ~", risk, " \u2502",
-          "\n\u2514", paste0(rep("\u2500", 42+nchar(risk)), collapse=""), "\u2518\n"))
+                     paste0("\n\n\u250C", paste0(rep("\u2500", 42+nchar(risk)), collapse=""), "\u2510",
+                            "\n\u2502 Accepting the reported analysis could",
+                            paste0(rep(" ", 4+nchar(risk)), collapse=""), "\u2502",
+                            "\n\u2502 increase the relative consumer risk by ~", risk, " \u2502",
+                            "\n\u2514", paste0(rep("\u2500", 42+nchar(risk)), collapse=""), "\u2518\n"))
       } else {
         txt <- paste(txt,
-          paste0("\n\n\u250C", paste0(rep("\u2500", 55), collapse=""), "\u2510",
-          "\n\u2502 The study could have demonstrated BE with adjusted \u03B1. \u2502",
-          "\n\u2502 However, this is not of regulatory concern.           \u2502",
-          "\n\u2514", paste0(rep("\u2500", 55), collapse=""), "\u2518\n"))
+                     paste0("\n\n\u250C", paste0(rep("\u2500", 55), collapse=""), "\u2510",
+                            "\n\u2502 The study could have demonstrated BE with adjusted \u03B1. \u2502",
+                            "\n\u2502 However, this is not of regulatory concern.           \u2502",
+                            "\n\u2514", paste0(rep("\u2500", 55), collapse=""), "\u2518\n"))
       }
     }
   }
   txt <- paste(txt, "\nPROGRAM OFFERED FOR USE WITHOUT ANY GUARANTEES AND ABSOLUTELY",
-                    "\nNO WARRANTY. NO LIABILITY IS ACCEPTED FOR ANY LOSS AND RISK",
-                    "\nTO PUBLIC HEALTH RESULTING FROM USE OF THIS R-CODE.")
+               "\nNO WARRANTY. NO LIABILITY IS ACCEPTED FOR ANY LOSS AND RISK",
+               "\nTO PUBLIC HEALTH RESULTING FROM USE OF THIS R-CODE.")
 
   if (plot.it & (TIE.interim.est > alpha0)) {
     ylim <- c(0.95*min(80, BE.spec, BE.adj, 125),
@@ -1998,13 +2000,13 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
          tick=FALSE)
     axis(2, las=1)
     axis(2, labels=FALSE, tcl=-0.15,
-      at=seq(ylim[1], ylim[2], signif(median(diff(pretty(ylim))), 3)/5))
+         at=seq(ylim[1], ylim[2], signif(median(diff(pretty(ylim))), 3)/5))
     axis(3, labels=sprintf("%.2f%%", 100*(1-2*c(alpha2, adj[2]))),
          at=1:2, tick=FALSE)
     mtext("adjusted confidence interval", 3, line=3)
     axis(4, labels=FALSE)
     axis(4, labels=FALSE, tcl=-0.15,
-      at=seq(ylim[1], ylim[2], signif(median(diff(pretty(ylim))), 3)/5))
+         at=seq(ylim[1], ylim[2], signif(median(diff(pretty(ylim))), 3)/5))
     abline(h=100*c(theta1, 1, theta2), col=c("red", "blue", "red"),
            lty=c(2, 1, 2))
     box()

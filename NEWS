@@ -9,6 +9,7 @@ Version 0.8.3.9000
        slow (couple of hours).
      - TSD_Backgound.pdf added in /doc subdirectory.
      - published at GitHub
+     - TODO: n2 with samplesiz2.R from Power2Stage.
 Version 0.8.2
 2016-10-14 (released to beta-testers)
      - Added (optional) 95% CI of TIE(s).

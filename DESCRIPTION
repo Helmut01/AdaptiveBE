@@ -1,4 +1,4 @@
-Package: adaptiveBE
+Package: AdaptiveBE
 Version: 0.8.3.9000
 Date: 2017-08-29
 Title: Check Acceptance of Adaptive Bioequivalence Studies
@@ -15,5 +15,5 @@ License: GPL (>=2)
 LazyLoad: yes
 LazyData: yes
 NeedsCompilation: no
-URL: https://github.com/Helmut01/adaptiveBE
-BugReports: https://github.com/Helmut01/adaptiveBE/issues
+URL: https://github.com/Helmut01/AdaptiveBE
+BugReports: https://github.com/Helmut01/AdaptiveBE/issues
