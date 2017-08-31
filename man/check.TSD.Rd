@@ -2,7 +2,7 @@
 \name{check.TSD}
 \alias{check.TSD}
 \title{
-Checks Acceptance of Two-Stage Sequential Designs in Bioequivalence
+Checks Acceptability of Two-Stage Sequential Designs in Bioequivalence
 }
 \description{
   This function assesses the pre-specified alpha(s) for the \acronym{BE} decision

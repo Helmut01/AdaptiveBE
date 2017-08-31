@@ -7,7 +7,8 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
                       setseed = TRUE, tol = 1e-8, pa = FALSE, skip = TRUE,
                       algo = 1, plot.it = FALSE, valid = FALSE, expl = 3,
                       Xover = TRUE, stop1 = FALSE, KM = FALSE,
-                      KM.des = c("TSD", "TSD-1", "TSD-2"), CIs = FALSE) {
+                      KM.des = c("TSD", "TSD-1", "TSD-2"), CIs = FALSE)
+{
   ######################################################################
   ## Check.TSD.R                                                      ##
   ## 1. Assess the empiric Type I Error (TIE) and power of crossover  ##
@@ -133,6 +134,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   ##                      force pmethod to "nct". However,            ##
   ##                      pmethod="exact" is  /extremely/ slow!       ##
   ##                    - Published on GitHub.                        ##
+  ##                    - n2 with sampleN2.TOST of Power2Stage.       ##
   ######################################################################
   ## PROGRAM OFFERED FOR USE WITHOUT ANY GUARANTEES AND ABSOLUTELY NO ##
   ## WARRANTY. NO LIABILITY IS ACCEPTED FOR ANY LOSS AND RISK TO      ##
@@ -682,6 +684,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
       alpha1 <- 0.01; alpha2 <- 0.04; nsims <- 20000
       Var1 <- c(0.30, "CV"); PE1 <- c(0.95, "ratio"); n1 <- 12
       Var  <- c(0.30, "CV"); PE  <- c(0.95, "ratio"); N  <- 42
+      meth <- "B0"
     }
     if (expl == 8 | expl == 9) { # Xu et al. high CVs
       GMR <- 0.95; target <- 0.8; pmethod<- "shifted"; usePE <- FALSE
@@ -827,45 +830,45 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   cit    <- citation("AdaptiveBE")
   year3  <- paste0(" (", substr(cit, regexpr("year", cit)+8,
                                 regexpr("year", cit)+11), ")")
-  hr     <- paste0(rep("\u2500", 67), collapse="")
+  hr     <- paste0(rep("\u2500", 61), collapse="")
   if (pmethod == "nct") pverbose <- "(approx. via non-central t)"
   if (pmethod == "shifted") pverbose <- "(approx. via shifted central t)"
   if (pmethod == "exact") pverbose <- "(exact via Owen\u2019s Q)"
   # Splash screens.
   if (stop1) {
     info1 <- paste(
-      "\n  ====================================================",
-      "\n   One million BE studies in a TSD will be simulated.",
-      "\n   Should take less than one minute on most systems.",
-      "\n  ====================================================\n")
+      "\n====================================================",
+      "\n One million BE studies in a TSD will be simulated.",
+      "\n Should take less than one minute on most systems.",
+      "\n====================================================\n")
   } else {
     if (pmethod != "exact") {
       info1 <- paste(
-        "\n  ====================================================",
-        "\n   1.1 million BE studies in a TSD will be simulated.",
-        "\n   Should take less than one minute on most systems.",
-        "\n  ====================================================\n")
+        "\n====================================================",
+        "\n 1.1 million BE studies in a TSD will be simulated.",
+        "\n Should take less than one minute on most systems.",
+        "\n====================================================\n")
     } else {
       info1 <- paste(
-        "\n  ====================================================",
-        "\n   1.1 million BE studies in a TSD will be simulated.",
-        "\n   Should take less than one minute on most systems.",
-        "\n   Will take a couple of minutes on most systems.   ",
-        "\n  ====================================================\n")
+        "\n====================================================",
+        "\n 1.1 million BE studies in a TSD will be simulated.",
+        "\n Should take less than one minute on most systems.",
+        "\n Will take a couple of minutes on most systems.   ",
+        "\n====================================================\n")
     }
   }
   if (pmethod != "exact") {
     info2 <- paste(
-      "\n  =============================================================",
-      "\n   Be patient. Adjusting \u03B1 requires simulating of up to 20",
-      "\n   million BE studies in a TSD. Will take a couple of minutes\u2026 ",
-      "\n  =============================================================\n")
+      "\n=============================================================",
+      "\n Be patient. Adjusting \u03B1 requires simulating of up to 20",
+      "\n million BE studies in a TSD. Will take a couple of minutes\u2026 ",
+      "\n=============================================================\n")
   } else {
     info2 <- paste(
-      "\n  =============================================================",
-      "\n   Be patient. Adjusting \u03B1 requires simulating of up to 20",
-      "\n   million BE studies in a TSD. Can take many (!) hours\u2026       ",
-      "\n  =============================================================\n")
+      "\n=============================================================",
+      "\n Be patient. Adjusting \u03B1 requires simulating of up to 20",
+      "\n million BE studies in a TSD. Can take many (!) hours\u2026       ",
+      "\n=============================================================\n")
   }
 
   # Check for asymmetric split of alphas (set a boolean variable).
@@ -916,8 +919,8 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
                 target != 0.8) outside.range <- TRUE
           } else {
             des.type <- paste(type, "(Fuglsang 2014, Method B)")
-            if (CV1 < 0.1 | CV1 > 1 | n1 < 48 | n1 > 120 | GMR != 0.95 |
-                target != 0.8) outside.range <- TRUE
+            if (CV1 < 0.1 | CV1 > 1 | sum(n1) < 48 | sum(n1) > 120 |
+              GMR != 0.95 | target != 0.8) outside.range <- TRUE
           }
         }
         if (unique(c(c(alpha1, alpha2))) == 0.0304 & min.n2 == 0)
@@ -952,8 +955,8 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
                 target != 0.8) outside.range <- TRUE
           } else {
             des.type <- paste(type, "(Fuglsang 2014, Method C)")
-            if (CV1 < 0.1 | CV1 > 1 | n1 < 48 | n1 > 120 | GMR != 0.95 |
-                target != 0.8) outside.range <- TRUE
+            if (CV1 < 0.1 | CV1 > 1 | sum(n1) < 48 | sum(n1) > 120 |
+              GMR != 0.95 | target != 0.8) outside.range <- TRUE
           }
         }
         if (unique(c(c(alpha1, alpha2))) == 0.0304 & min.n2 == 0)
@@ -1032,7 +1035,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
                       "\nUser               : ", user,
                       "\nOperating System   : ", OS, " ", OSrel))
   if (OS == "Darwin") { # special treatment (long system[["version"]])
-    tmp <- strwrap(OSver, width = 79, prefix="\n                     ")
+    tmp <- strwrap(OSver, width=61, prefix="\n                     ")
     for (j in 1:length(tmp)) {
       txt <- paste0(txt, tmp[[j]])
     }
@@ -1142,7 +1145,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   }
   cond <- paste(txt,
                 "\nStudy conditions and assessment of empiric Type I Error",
-                paste0("\n", paste0(rep("\u2500", 60), collapse="")),
+                paste0("\n", paste0(rep("\u2500", 61), collapse="")),
                 "\nDesign             :")
   if (design == "2x2x2") {
     cond <- paste(cond, "2\u00D72\u00D72 crossover")
@@ -1488,25 +1491,25 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
                              BE.interim.spec[["upper"]]),
                      BE.interim.spec.assess,
                      "\nPower    :", sprintf("%1.4f", pwr.interim.calc), pverbose)
-    if (pwr.interim.calc >= target &
-        BE.interim.spec.assess == fail) {
+    if (pwr.interim.calc >= target & BE.interim.spec.assess == fail) {
       interim <- paste(interim,
                        "\nStudy should have been stopped (\u2265 target power) and",
                        "\nconclusions based on the interim.\n")
     } else { # Lower than target power and not BE. Proceed to stage 2.
       if (!usePE) { # Use fixed GMR.
-        n2.spec <- sampleN.TOST(alpha=alpha2, CV=CV1, theta0=GMR,
-                                targetpower=target, design=design,
-                                method=pmethod,
-                                print=FALSE)[["Sample size"]] - n1
+        n2.spec <- sampleN2.TOST(alpha=alpha2, CV=CV1, n1=n1, theta0=GMR,
+                                 theta1=theta1, theta2=theta2,
+                                 targetpower=target, design=design,
+                                 method=pmethod)[["Sample size"]]
       } else {      # Use the PE of stage 1.
-        n2.spec <- sampleN.TOST(alpha=alpha2, CV=CV1, theta0=PE1,
-                                targetpower=target, design=design,
-                                method=pmethod,
-                                print=FALSE)[["Sample size"]] - n1
+        n2.spec <- sampleN2.TOST(alpha=alpha2, CV=CV1, n1=n1, theta0=PE1,
+                                 theta1=theta1, theta2=theta2,
+                                 targetpower=target, design=design,
+                                 method=pmethod)[["Sample size"]]
       }
       interim <- paste(interim, sprintf("%s %i %s%i%s",
-                                        "\nSecond stage with", n2.spec, "subjects (N=", n1 + n2.spec,
+                                        "\nSecond stage with", n2.spec,
+                                        "subjects (N=", n1 + n2.spec,
                                         ") is justified.\n"))
     }
   } else { # Type 2
@@ -1558,24 +1561,30 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
                        BE.interim.spec.assess,
                        "\nPower    :", sprintf("%1.4f", pwr.interim.calc), pverbose)
     }
-    if (pwr.interim.calc >= target & BE.interim.spec.assess == fail) {
+    if (pwr.interim.calc >= target | BE.interim.spec.assess == pass) {
+      if (pwr.interim.calc >= target) {
       interim <- paste(interim,
                        "\nStudy should have been stopped (\u2265 target power) and",
                        "\nconclusions based on the interim.\n")
-    } else { # Lower than target power and not BE. Proceed to stage 2.
+      } else {
+      interim <- paste(interim,
+                       "\nStudy should have been stopped (BE in the interim).\n")
+      }
+    } else { # Lower than target power and not BE: Proceed to stage 2.
       if (!usePE) { # Use fixed GMR.
-        n2.spec <- sampleN.TOST(alpha=alpha2, CV=CV1, theta0=GMR,
-                                targetpower=target, design=design,
-                                method=pmethod,
-                                print=FALSE)[["Sample size"]] - n1
+        n2.spec <- sampleN2.TOST(alpha=alpha2, CV=CV1, n1=n1, theta0=GMR,
+                                 theta1=theta1, theta2=theta2,
+                                 targetpower=target, design=design,
+                                 method=pmethod)[["Sample size"]]
       } else {      # Use the PE of stage 1.
-        n2.spec <- sampleN.TOST(alpha=alpha2, CV=CV1, theta0=PE1,
-                                targetpower=target, design=design,
-                                method=pmethod,
-                                print=FALSE)[["Sample size"]] - n1
+        n2.spec <- sampleN2.TOST(alpha=alpha2, CV=CV1, n1=n1, theta0=PE1,
+                                 theta1=theta1, theta2=theta2,
+                                 targetpower=target, design=design,
+                                 method=pmethod)[["Sample size"]]
       }
       interim <- paste(interim, sprintf("%s %i %s%i%s",
-                                        "\nSecond stage with", n2.spec, "subjects (N=", n1 + n2.spec,
+                                        "\nSecond stage with", n2.spec,
+                                        "subjects (N=", n1 + n2.spec,
                                         ") is justified.\n"))
     }
   }
@@ -1646,19 +1655,21 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
                              "\nStudy should have been stopped (\u2265 target power) and",
                              "\nconclusions based on the interim.\n")
       } else { # Lower than target power and not BE. Proceed to stage 2.
+        ifelse (design != "parallel", n1.tmp <- n1, n1.tmp <- sum(n1))
         if (!usePE) { # Use fixed GMR.
-          n2.adj <- sampleN.TOST(alpha=adj[2], CV=CV1, theta0=GMR,
-                                 targetpower=target, design=design,
-                                 method=pmethod,
-                                 print=FALSE)[["Sample size"]] - n1
+          n2.adj <- sampleN2.TOST(alpha=adj[2], CV=CV1, n1=sum(n1), theta0=GMR,
+                                  theta1=theta1, theta2=theta2,
+                                  targetpower=target, design=design,
+                                  method=pmethod)[["Sample size"]]
         } else {      # Use the PE of stage 1.
-          n2.adj <- sampleN.TOST(alpha=adj[2], CV=CV1, theta0=PE1,
-                                 targetpower=target, design=design,
-                                 method=pmethod,
-                                 print=FALSE)[["Sample size"]] - n1
+          n2.adj <- sampleN2.TOST(alpha=adj[2], CV=CV1, n1=sum(n1), theta0=PE1,
+                                  theta1=theta1, theta2=theta2,
+                                  targetpower=target, design=design,
+                                  method=pmethod)[["Sample size"]]
         }
         interim.adj <- paste(interim.adj, sprintf("%s %i %s%i%s",
-                                                  "\nSecond stage with", n2.adj, "subjects (N=", n1 + n2.adj,
+                                                  "\nSecond stage with", n2.adj,
+                                                  "subjects (N=", n1 + n2.adj,
                                                   ") is justified.\n"))
       }
     } else { # Type 2
@@ -1705,24 +1716,30 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
                              BE.interim.adj.assess,
                              "\nPower    :", sprintf("%1.4f", pwr.interim.calc), pverbose)
       }
-      if (pwr.interim.calc >= target & BE.interim.adj.assess == fail) {
-        interim.adj <- paste(interim.adj,
-                             "\nStudy should have been stopped (\u2265 target power) and",
-                             "\nconclusions based on the interim.\n")
+      if (pwr.interim.calc >= target | BE.interim.adj.assess == pass) {
+        if (pwr.interim.calc >= target) {
+          interim <- paste(interim,
+                           "\nStudy should have been stopped (\u2265 target power) and",
+                         "\nconclusions based on the interim.\n")
+        } else {
+          interim <- paste(interim,
+                           "\nStudy should have been stopped (BE in the interim).\n")
+        }
       } else { # Lower than target power and not BE. Proceed to stage 2.
         if (!usePE) { # Use fixed GMR.
-          n2.adj <- sampleN.TOST(alpha=adj[2], CV=CV1, theta0=GMR,
-                                 targetpower=target, design=design,
-                                 method=pmethod,
-                                 print=FALSE)[["Sample size"]] - n1
+          n2.adj <- sampleN2.TOST(alpha=adj[2], CV=CV1, n1=sum(n1), theta0=GMR,
+                                  theta1=theta1, theta2=theta2,
+                                  targetpower=target, design=design,
+                                  method=pmethod)[["Sample size"]]
         } else {      # Use the PE of stage 1.
-          n2.adj <- sampleN.TOST(alpha=adj[2], CV=CV1, theta0=PE1,
-                                 targetpower=target, design=design,
-                                 method=pmethod,
-                                 print=FALSE)[["Sample size"]] - n1
+          n2.adj <- sampleN2.TOST(alpha=adj[2], CV=CV1, n1=sum(n1), theta0=PE1,
+                                  theta1=theta1, theta2=theta2,
+                                  targetpower=target, design=design,
+                                  method=pmethod)[["Sample size"]]
         }
         interim.adj <- paste(interim.adj, sprintf("%s %i %s%i%s",
-                                                  "\nSecond stage with", n2.adj, "subjects (N=", n1 + n2.adj,
+                                                  "\nSecond stage with", n2.adj,
+                                                  "subjects (N=", n1 + n2.adj,
                                                   ") is justified.\n"))
       }
     }
@@ -1773,13 +1790,13 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
     BE.spec.assess <- fail
   }
   BE.adj.assess <- BE.spec.assess # Workaround to allow final
-  # assessment in the output.
+                                  # assessment in the output.
   if (valid) { # Only in validation: irrelevant post-hoc power
-    # Suppress messages regarding unbalanced designs.
-    suppressMessages(
-      ph.spec <- power.TOST(alpha=alpha2, CV=CV, method=pmethod,
-                            n=N-1, theta0=c(GMR, PE), design=design)
-    )
+    ifelse (design == "parallel", bk <- 4, bk <- 2)
+    ph.spec <- .calc.power(alpha=alpha2, ltheta1=log(theta1),
+                           ltheta2=log(theta2), diffm=log(c(GMR, PE)),
+                           sem=CV2se(CV)*sqrt(bk/N), df=N-3,
+                           method=pmethod)
   }
   if (!skip | TIE.interim.est > alpha0) {
     # Adjusted alpha(s).
@@ -1791,11 +1808,11 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
       BE.adj.assess <- fail
     }
     if (valid) { # Only in validation: irrelevant post-hoc power
-      # Suppress messages regarding unbalanced designs.
-      suppressMessages(
-        ph.adj <- power.TOST(alpha=adj[2], CV=CV, method=pmethod,
-                             n=N-1, theta0=c(GMR, PE), design=design)
-      )
+      ifelse (design == "parallel", bk <- 4, bk <- 2)
+      ph.adj <- .calc.power(alpha=adj[2], ltheta1=log(theta1),
+                            ltheta2=log(theta2), diffm=log(c(GMR, PE)),
+                            sem=CV2se(CV)*sqrt(bk/N), df=N-3,
+                            method=pmethod)
     }
   }
 
@@ -1827,10 +1844,11 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
              c(paste0("average (", round(pwr.interim.est$nmean, 1), ")"),
                paste0("median (", pwr.interim.est$nperc[[2]], ")"),
                paste0("5, 95 percentiles (",
-                      pwr.interim.est$nperc[[1]], ", ", pwr.interim.est$nperc[[3]], ")")),
+                      pwr.interim.est$nperc[[1]], ", ",
+                      pwr.interim.est$nperc[[3]], ")")),
            bg="white", box.lty=0, inset=0.005, cex=0.95, y.intersp=1.15,
            lty=c(1, 2, 3))
-    # Second plot: Optimzed alpha(s).
+    # Second plot: Optimized alpha(s).
     plot(pwr.interim.adj$ntable/sum(pwr.interim.adj$ntable), col="blue",
          xlim=xlim, ylim=ylim, xlab="N", lwd=3, ylab="",
          main="Optimized \u03B1")
@@ -1843,7 +1861,8 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
              c(paste0("average (", round(pwr.interim.adj$nmean, 1), ")"),
                paste0("median (", pwr.interim.adj$nperc[[2]], ")"),
                paste0("5, 95 percentiles (",
-                      pwr.interim.adj$nperc[[1]], ", ", pwr.interim.adj$nperc[[3]], ")")),
+                      pwr.interim.adj$nperc[[1]], ", ",
+                      pwr.interim.adj$nperc[[3]], ")")),
            bg="white", box.lty=0, inset=0.005,
            cex=0.95, y.intersp=1.15, lty=c(1, 2, 3))
     # Title on top.
@@ -1972,11 +1991,11 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
       if (BE.spec.assess == pass & BE.adj.assess == fail) {
         risk <- sprintf("%.1f%%.", 100*(TIE.interim.est-alpha0)/alpha0)
         txt <- paste(txt,
-                     paste0("\n\n\u250C", paste0(rep("\u2500", 42+nchar(risk)), collapse=""), "\u2510",
-                            "\n\u2502 Accepting the reported analysis could",
-                            paste0(rep(" ", 4+nchar(risk)), collapse=""), "\u2502",
-                            "\n\u2502 increase the relative consumer risk by ~", risk, " \u2502",
-                            "\n\u2514", paste0(rep("\u2500", 42+nchar(risk)), collapse=""), "\u2518\n"))
+                     paste0("\n\n\u250C", paste0(rep("\u2500", 40+nchar(risk)), collapse=""), "\u2510",
+                            "\n\u2502 Accepting the reported analysis could in-",
+                            paste0(rep(" ", nchar(risk)-2), collapse=""), "\u2502",
+                            "\n\u2502 crease the relative consumer risk by ~", risk, " \u2502",
+                            "\n\u2514", paste0(rep("\u2500", 40+nchar(risk)), collapse=""), "\u2518\n"))
       } else {
         txt <- paste(txt,
                      paste0("\n\n\u250C", paste0(rep("\u2500", 55), collapse=""), "\u2510",
@@ -2024,11 +2043,11 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
          labels=sprintf("%.2f%%", BE.adj[["upper"]]))
   }
   # insert exec.end into txt
-  exec.end   <- strftime(Sys.time(), usetz=TRUE) # Timestamp.
+  exec.end <- strftime(Sys.time(), usetz=TRUE) # Timestamp.
   if (valid) {
-    cut.pos    <- unlist(gregexpr(pattern="\nValidation", txt))
+    cut.pos <- unlist(gregexpr(pattern="\nValidation", txt))
   } else {
-    cut.pos    <- unlist(gregexpr(pattern="\nStudy conditions ", txt))
+    cut.pos <- unlist(gregexpr(pattern="\nStudy conditions ", txt))
   }
   left.str   <- substr(txt, 1, cut.pos-1)
   right.str  <- substr(txt, cut.pos, nchar(txt))

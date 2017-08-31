@@ -1,7 +1,7 @@
 Version 0.8.3.9000
 2017-08-29 (dedicated to my wife's 60th birthday)
      - Examples updated to reflect the latest release of Power2Stage
-       df=n-3 instaed of n-2 in the sample size estimation and pooled
+       df=N-3 instead of N-2 in the sample size estimation and pooled
        analysis.
      - pmethod in opt() not forced to "nct" any more. Both "shifted"
        and "exact" work with uniroot's interval=c(tol, alpha0) instead
@@ -9,7 +9,8 @@ Version 0.8.3.9000
        slow (couple of hours).
      - TSD_Backgound.pdf added in /doc subdirectory.
      - published at GitHub
-     - TODO: n2 with samplesiz2.R from Power2Stage.
+     - n2 with sampleN2.TOST() from Power2Stage.
+     - Final power with N-3 degrees of freedom.
 Version 0.8.2
 2016-10-14 (released to beta-testers)
      - Added (optional) 95% CI of TIE(s).

@@ -10,45 +10,45 @@
 #           but only for Potvin like TSD's
 # -------------------------------------------------------------------------
 # is also used for parallel groups with bk=4
-# copied from package Power2Stage [HS]
 
-.sampleN2 <- function(alpha=0.05, targetpower=0.8, ltheta0, ltheta1=log(0.8), 
+.sampleN2 <- function(alpha=0.05, targetpower=0.8, ltheta0, ltheta1=log(0.8),
                       ltheta2=log(1.25), mse, method="nct", bk=2, dfc="n-3")
 {
   # se and ltheta0/diffm must have the same length to vectorize propperly!
   if (length(mse)==1)     mse <- rep(mse, times=length(ltheta0))
   if (length(ltheta0)==1) ltheta0 <- rep(ltheta0, times=length(mse))
-  
+
   # return 'Inf' if ltheta0 not between or very near to ltheta1, ltheta2
   ns <- ifelse((ltheta0-ltheta1)<1.25e-5 | (ltheta2-ltheta0)<1.25e-5, Inf, 0)
 
   # design characteristics for 2-group parallel and 2x2 crossover design
   steps <- 2     # stepsize for sample size search (balanced designs)
   nmin  <- 4     # minimum n
-  
+
   se    <- sqrt(mse[is.finite(ns)])
   diffm <- ltheta0[is.finite(ns)]
-  
+
   # start value from large sample approx. (hidden func.)
   # Jan 2015 changed to modified Zhang's formula
   # gives at least for 2x2 the best estimate (max diff to n: +-4)
+  .sampleN0_3 <- NULL
   n <- .sampleN0_3(alpha, targetpower, ltheta1, ltheta2, diffm, se, steps, bk)
   n <- ifelse(n<nmin, nmin, n)
-  
+
   # method=="ls" is not used yet, in power.2stage.ssr() the 'original' ls approx
   # is used exactly as given in the paper of Golkowski et al.
   if(method=="ls") return(n)
-  
+
   # degrees of freedom as expression
   # usual n-2 for 2x2 crossover and 2-group parallel design
   # dfe <- parse(text="n-2", srcfile=NULL)
   # or should that read n-3? see Kieser/Rauch for inclusion of a stage term
   # the jury has decided so
   dfe <- parse(text=dfc, srcfile=NULL)
-  
+
   df   <- eval(dfe)
   pow  <- .calc.power(alpha, ltheta1, ltheta2, diffm, sem=se*sqrt(bk/n), df, method)
-  iter <- rep(0, times=length(se)) 
+  iter <- rep(0, times=length(se))
   imax <- 50
   # imax =max. iter >50 is emergency brake
   # this is eventually not necessary, depends on quality of sampleN0
@@ -60,7 +60,7 @@
     n[index]    <- n[index]-steps     # step down if start power is to high
     iter[index] <- iter[index]+1
     df <- eval(dfe)
-    pow[index]  <- .calc.power(alpha, ltheta1, ltheta2, diffm[index], 
+    pow[index]  <- .calc.power(alpha, ltheta1, ltheta2, diffm[index],
                                sem=se[index]*sqrt(bk/n[index]), df[index],
                                method)
     index <- pow>targetpower & n>nmin & iter<=imax
@@ -74,8 +74,8 @@
     n[index] <- n[index]+steps
     iter[index] <- iter[index]+1
     df <- eval(dfe)
-    pow[index]  <- .calc.power(alpha, ltheta1, ltheta2, diffm[index], 
-                               sem=se[index]*sqrt(bk/n[index]), df[index], 
+    pow[index]  <- .calc.power(alpha, ltheta1, ltheta2, diffm[index],
+                               sem=se[index]*sqrt(bk/n[index]), df[index],
                                method)
     index <- pow<targetpower & iter<=imax
   }
@@ -88,5 +88,5 @@
   n <- ns
   #  return only n here
   return(n)
-  
+
 } # end of function
