@@ -10,7 +10,9 @@ Version 0.8.3.9000
      - TSD_Backgound.pdf added in /doc subdirectory.
      - published at GitHub
      - n2 with sampleN2.TOST() from Power2Stage.
-     - Final power with N-3 degrees of freedom.
+     - Post hoc power with N-3 degrees of freedom.
+     - Moved stuff to new helper().
+     - New example() containing data for the validation.
 Version 0.8.2
 2016-10-14 (released to beta-testers)
      - Added (optional) 95% CI of TIE(s).

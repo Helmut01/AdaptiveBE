@@ -13,7 +13,7 @@ Checks Acceptability of Two-Stage Sequential Designs in Bioequivalence
 \usage{
 check.TSD(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE, GMR,
           alpha0 = 0.05, alpha1 = 0.0294, alpha2 = 0.0294, theta1, theta2,
-          target = 0.8, pmethod = c("shifted", "nct", "exact"),
+          target = 0.80, pmethod = c("shifted", "nct", "exact"),
           int.pwr = TRUE, min.n2 = 0, max.n = Inf, Nmax = Inf,
           fCrit = c("PE", "CI"), fClow = 0, nsims = 1e6, setseed = TRUE,
           tol = 1e-8, pa = FALSE, skip = TRUE, algo = 1, plot.it = FALSE,
@@ -22,26 +22,34 @@ check.TSD(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE, GMR,
 }
 \arguments{
   \item{Var1}{
-    Vector of observed variability in the first stage.\cr
-    If two elements are given:\cr
-    \verb{1}: value\cr
-    \verb{2}: \verb{"CV"} coefficient of variation (use \emph{e.g.}, 0.3 for
-    30\%) or \verb{"MSE"} (residual error from \acronym{ANOVA}).\cr
+    Vector of observed variability in the first stage.\cr\cr
+    If two elements are given:
+    \enumerate{
+      \item numeric value
+      \item \verb{"CV"} coefficient of variation (use \emph{e.g.}, 0.3 for
+    30\%) or \verb{"MSE"} (residual error from \acronym{ANOVA})
+    }
 
     If four elements are given, the CV is calculated from the confidence
-    interval by PowerTOST\enc{’}{'}s function \verb{CVfromCI()}:\cr
-    \verb{1}: lower confidence limit\cr
-    \verb{2}: upper confidence limit\cr
-    \verb{3}: alpha\cr
-    \verb{4}: \verb{"CI"}
+    interval by PowerTOST\enc{’}{'}s function \verb{CVfromCI()}:
+    \enumerate{
+      \item lower confidence limit (use \emph{e.g.}, 0.81 for
+    81\%)
+      \item upper confidence limit (use \emph{e.g.}, 1.15 for
+    115\%)
+      \item alpha
+      \item \verb{"CI"}
+    }
   }
   \item{PE1}{
     Observed point estimate in the first stage.\cr
-    Must be given if a two-element vector of \verb{Var1} is given.\cr
-    \verb{1}: value\cr
-    \verb{2}: \verb{"ratio"} (GMR as a ratio -- not percent) or
-    \verb{"difflog"} (difference of LSMs in log-scale).\cr
-    In the case of a four-element vector of \verb{Var1} the \acronym{PE} will
+    Must be given if a two-element vector of \verb{Var1} is given.
+    \enumerate{
+      \item numeric value (use \emph{e.g.}, 0.96 for
+    96\%)
+      \item \verb{"ratio"} or \verb{"difflog"} (difference of LSMs in log-scale)
+    }
+    In the case of a four-element vector of \verb{Var1}, \acronym{PE1} will
     be calculated as \eqn{\sqrt(Var1[1]*Var1[2])}.
   }
   \item{n1}{
@@ -52,25 +60,34 @@ check.TSD(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE, GMR,
     two), the code tries to keep sequences (or groups) as balanced as possible.\cr
   }
   \item{Var}{
-    Vector of observed variability in the final (pooled) analysis.\cr
-    If two elements are given:\cr
-    \verb{1}: value\cr
-    \verb{2}: \verb{"CV"} coefficient of variation (use \emph{e.g.}, 0.3 for
-    30\%) or \verb{"MSE"} (residual error from \acronym{ANOVA}).\cr
+    Vector of observed variability in the final (pooled) analysis.\cr\cr
+    If two elements are given:
+    \enumerate{
+      \item numeric value
+      \item \verb{"CV"} coefficient of variation (use \emph{e.g.}, 0.3 for
+    30\%) or \verb{"MSE"} (residual error from \acronym{ANOVA})
+    }
+
     If four elements are given, the CV is calculated from the confidence
-    interval by PowerTOST\enc{’}{'}s function \verb{CVfromCI()}:\cr
-    \verb{1}: lower confidence limit\cr
-    \verb{2}: upper confidence limit\cr
-    \verb{3}: alpha\cr
-    \verb{4}: \verb{"CI"}
+    interval (taking the degrees of freedom of the stage-term into account):
+    \enumerate{
+      \item lower confidence limit (use \emph{e.g.}, 0.83 for
+    83\%)
+      \item upper confidence limit (use \emph{e.g.}, 1.13 for
+    113\%)
+      \item alpha
+      \item \verb{"CI"}
+    }
   }
   \item{PE}{
-    Observed point estimate in the final (pooled) analysis.\cr
-    Must be given if a two-element vector of \verb{Var} is given.\cr
-    \verb{1}: value\cr
-    \verb{2}: \verb{"ratio"} (GMR as a ratio --
-    not percent) or \verb{"difflog"} (difference of LSMs in log-scale).\cr
-    In the case of a four-element vector of \verb{Var} the \acronym{PE} will
+   Observed point estimate in the final (pooled) analysis.\cr
+    Must be given if a two-element vector of \verb{Var} is given.
+    \enumerate{
+      \item numeric value (use \emph{e.g.}, 0.96 for
+    96\%)
+      \item \verb{"ratio"} or \verb{"difflog"} (difference of LSMs in log-scale)
+    }
+    In the case of a four-element vector of \verb{Var}, \acronym{PE} will
     be calculated as \eqn{\sqrt(Var[1]*Var[2])}.
   }
   \item{N}{
@@ -79,15 +96,15 @@ check.TSD(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE, GMR,
     sequences (or groups) as balanced as possible.
   }
   \item{type}{
-    \sQuote{Type} of the Two-Stage Design (\verb{1} or \verb{2}). For the
-    definition see \enc{Schütz}{Schuetz}.\cr
+    \sQuote{Type} of the Two-Stage Design (\verb{1}, \verb{2}, or \verb{"MSDBE"}).
+    For the definition see \enc{Schütz}{Schuetz}.\cr
     Defaults to \verb{1} if not given explicitly.
   }
   \item{usePE}{
     If \verb{TRUE} the sample size estimation step is done with \verb{PE1}
     and the MSE of stage 1 (\emph{i.e.}, fully adaptive).\cr
-    Defaults to \verb{FALSE} in wich case the sample size is estimated with
-    the fixed \verb{GMR} and MSE of stage 1 analogous to Potvin \emph{et. al.}\cr
+    Defaults to \verb{FALSE}, (\emph{i.e.}, the sample size is estimated with
+    the fixed \verb{GMR} and MSE of stage 1.\cr
     NB: The power inspection steps in the Potvin methods are always done with
     the \verb{GMR} argument and MSE (CV) of stage 1.
   }
@@ -100,11 +117,11 @@ check.TSD(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE, GMR,
   \item{alpha0}{
     Type I error (\acronym{TIE}) probability (\ifelse{html}{\out{&alpha;}}{
     \eqn{\alpha}{alpha}}; nominal level of the test). Per convention
-    commonly set to 0.05.
+    commonly set to \verb{0.05}.
   }
   \item{alpha1}{
     Specified adjusted \ifelse{html}{\out{&alpha;}}{
-    \eqn{\alpha}{alpha}} of the test in the interim. Defaults to 0.0294.\cr
+    \eqn{\alpha}{alpha}} of the test in the interim. Defaults to \verb{0.0294}.\cr
     Common values:\cr
     \verb{0.0010}: Haybittle/Peto\cr
     \verb{0.0050}: O\enc{’}{'}Brien/Fleming\cr
@@ -122,7 +139,7 @@ check.TSD(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE, GMR,
   }
   \item{alpha2}{
     Specified adjusted \ifelse{html}{\out{&alpha;}}{
-    \eqn{\alpha}{alpha}} of the test in the final (pooled) analysis. Defaults to 0.0294.\cr
+    \eqn{\alpha}{alpha}} of the test in the final (pooled) analysis. Defaults to \verb{0.0294}.\cr
     Common values:\cr
     \verb{0.0400}: Zheng \emph{et al.}\cr
     \verb{0.0480}: O\enc{’}{'}Brien/Fleming\cr
@@ -139,10 +156,10 @@ check.TSD(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE, GMR,
     \verb{0.0364}: Xu \emph{et al.} Method F (\sQuote{Type 2}) for CV 10--30\%
   }
   \item{theta1}{
-    Lower acceptance limit for \acronym{BE}. Defaults to 0.80 if not given explicitly.
+    Lower acceptance limit for \acronym{BE}. Defaults to \verb{0.80} if not given explicitly.
   }
   \item{theta2}{
-    Upper acceptance limit for \acronym{BE}. Defaults to 1.25 if not given explicitly.
+    Upper acceptance limit for \acronym{BE}. Defaults to \verb{1.25} if not given explicitly.
   }
   \item{target}{
     Power threshold in the first step of \sQuote{Type 1} designs and power to achieve
@@ -254,26 +271,29 @@ check.TSD(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE, GMR,
     \eqn{\alpha}{alpha}} inflates the \acronym{TIE}).
   }
   \item{valid}{
-    Should one of the validation datasets be assessed? Defaults to \verb{FALSE}.\cr
-    If set to \verb{TRUE} on of the built-in datasets must be specified in
-    the argument \verb{expl}.
+    Should one of the validation examples be assessed? Defaults to \verb{FALSE}.\cr
+    If set to \verb{TRUE} one of the built-in examples must be specified in
+    the argument \verb{expl}. Any of the other arguments can be additionally
+    specified in order to assess their impact.
   }
   \item{expl}{
-    Number of the validation dataset.\cr
-    \verb{1}: Potvin \emph{et al.} Example 1, Method B (type 1), alpha1=alpha2=0.0294, GMR=0.95, target=0.80\cr
-    \verb{2}: Potvin \emph{et al.} Example 1, Method C (type 2), alpha1=0.05|0.0294, alpha2=0.0294, GMR=0.95, target=0.80, stopped in the interim\cr
-    \verb{3}: Potvin \emph{et al.} Example 2, Method B (type 1), alpha1=alpha2=0.0294, GMR=0.95, target=0.80\cr
-    \verb{4}: Potvin \emph{et al.} Example 1, Method C (type 2), alpha1=0.05|0.0294, alpha2=0.0294, GMR=0.95, target=0.80\cr
-    \verb{5}: Montague \emph{et al.} Method D (type 2), alpha1=0.05|0.0280, alpha2=0.0280, GMR=0.90, target=0.80\cr
-    \verb{6}: Haybittle/Peto (type 1), alpha1=0.001, alpha2=0.049, GMR=0.95, target=0.80\cr
-    \verb{7}: Zheng \emph{et al.} (type 1), alpha1=0.01, alpha2=0.04, GMR=0.95, target=0.80\cr
-    \verb{8}: Xu \emph{et al.} Method E, high CV (type 1), alpha1=0.0254, alpha2=0.0357, GMR=0.95, target=0.80, n.max=180, futility on CI 0.9305...1/0.9305\cr
-    \verb{9}: Xu \emph{et al.} Method F, high CV (type 2), alpha1=0.05|0.0259, alpha2=0.0349, GMR=0.95, target=0.80, n.max=180, futility on CI 0.9350...1/0.9350\cr
-    \verb{10}: Fuglsang 2013, Method B (type 1), alpha1=alpha2=0.0284, GMR=0.95, target=0.90\cr
-    \verb{11}: Fuglsang 2013, Method C/D (type 2), alpha1=0.05|0.0269, alpha2=0.0269, GMR=0.90, target=0.90\cr
-    \verb{12}: Fuglsang 2014, parallel, Method C (type 2), alpha1=0.05|0.0294, alpha2=0.0294, GMR=0.95, target=0.80 (parallel design)\cr
-    \verb{13}: Karalis/Macheras, TSD (type 2), alpha1=alpha2=0.0294, target=0.80, futility on PE 0.8...1.25, Nmax=150\cr
-    \verb{14}: BEBAC internal, Method C (type 2), alpha1=0.05|0.0294, alpha2=0.0294, GMR=0.95, target=0.80, stopped in the interim\cr
+    Number of the validation examples (\verb{1} to \verb{14}).
+    \enumerate{
+      \item Potvin \emph{et al.} Example 1, Method B (\sQuote{Type 1}), alpha1=alpha2=0.0294, GMR=0.95, target=0.80
+      \item Potvin \emph{et al.} Example 1, Method C (\sQuote{Type 2}), alpha0=0.05, alpha1=alpha2=0.0294, GMR=0.95, target=0.80, stopped in the interim
+      \item Potvin \emph{et al.} Example 2, Method B (\sQuote{Type 1}), alpha1=alpha2=0.0294, GMR=0.95, target=0.80
+      \item Potvin \emph{et al.} Example 2, Method C (\sQuote{Type 2}), alpha0=0.05, alpha1=alpha2=0.0294, GMR=0.95, target=0.80
+      \item Montague \emph{et al.} Method D (\sQuote{Type 2}), alpha0=0.05, alpha1=alpha2=0.0280, GMR=0.90, target=0.80
+      \item Haybittle/Peto (\sQuote{Type 1}), alpha1=0.001, alpha2=0.049, GMR=0.95, target=0.80
+      \item Zheng \emph{et al.} (\acronym{MSDBE}), alpha1=0.01, alpha2=0.04, GMR=0.95, target=0.80
+      \item Xu \emph{et al.} Method E, high CV (\sQuote{Type 1}), alpha1=0.0254, alpha2=0.0357, GMR=0.95, target=0.80, n.max=180, futility on CI 0.9305\ldots1/0.9305
+      \item Xu \emph{et al.} Method F, high CV (\sQuote{Type 2}), alpha0=0.05, alpha1=0.0259, alpha2=0.0349, GMR=0.95, target=0.80, n.max=180, futility on CI 0.9350\ldots1/0.9350
+      \item Fuglsang 2013, Method B (\sQuote{Type 1}), alpha1=alpha2=0.0284, GMR=0.95, target=0.90
+      \item Fuglsang 2013, Method C/D (\sQuote{Type 2}), alpha0=0.05, alpha1=alpha2=0.0269, GMR=0.90, target=0.90
+      \item Fuglsang 2014, parallel, Method C (\sQuote{Type 2}), alpha0=0.05, alpha1=alpha2=0.0294, GMR=0.95, target=0.80 (parallel design)
+      \item Karalis/Macheras, TSD (\sQuote{Type 2}), alpha0=0.05, alpha1=alpha2=0.0294, target=0.80, futility on PE 0.80\ldots1.25, Nmax=150
+      \item \acronym{BEBAC} internal, Method C (\sQuote{Type 2}), alpha0=0.05, alpha1=alpha2=0.0294, GMR=0.95, target=0.80, stopped in the interim
+    }
   }
   \item{Xover}{
     Defaults to \verb{TRUE}.Set to \verb{FALSE} if the study was performed in a parallel design.
@@ -292,8 +312,8 @@ check.TSD(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE, GMR,
   \item{KM.des}{
     Design-specification of Karalis & Macheras or Karalis. Acceptable values:\cr
     \verb{TSD} \sQuote{Type 2} (Karalis & Macheras).\cr
-    \verb{TSD-1} \sQuote{Type 1} (Karalis).\cr
-    \verb{TSD-2} \sQuote{Type 2} (Karalis).
+    \verb{TSD-1} \sQuote{Type 2} (Karalis).\cr
+    \verb{TSD-2} \sQuote{Type 1} (Karalis).
   }
   \item{CIs}{
     Defaults to \verb{FALSE}. Set to \verb{TRUE} to show the two-sided 95\% CI
@@ -313,8 +333,7 @@ check.TSD(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE, GMR,
   conditions. In the strict sense applying a specified \ifelse{html}{\out{&alpha;}}{
   \eqn{\alpha}{alpha}} is only justified if the study\enc{’}{'}s conditions were
   within the validated range (\emph{e.g.}, n1, CV1, GMR, target power, etc) given
-  in the references. This is no problem if the \acronym{TIE} is preserved but it
-  shows some lack of understanding by the applicant.\cr
+  in the references.
 
   Hoping to get in simulations an empiric Type I Error of \emph{exactly} 0.05 (as
   -- \emph{unoffically} -- demanded by the \acronym{EMA}\enc{’}{'}s Biostatistics
@@ -322,11 +341,13 @@ check.TSD(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE, GMR,
   designs to two digits according to the guideline (\emph{i.e.}, 79.995\% upwards
   to 80.00\% or 125.004\% downwards to 125.00\%) may transform into a \acronym{TIE}
   of up to 0.0508.\cr
+  For more details see a description in the doc subdirectory of the package.\cr
   So far the author did not came across a \acronym{TIE} after optimization of
-  >0.05001. The question whether this is acceptable to the \acronym{BSWP} remains unclear.
+  >0.05001. The question whether this is acceptable to the \acronym{BSWP}
+  remains open.
 
-  \bold{PROGRAM OFFERED FOR USE WITHOUT ANY GUARANTEES AND ABSOLUTELY NO WARRANTY.\cr
-  NO LIABILITY IS ACCEPTED FOR ANY LOSS AND RISK TO PUBLIC HEALTH RESULTING FROM USE OF THIS CODE.}
+  \bold{Program offered for Use without any Guarantees and Absolutely No Warranty.\cr
+  No Liability is accepted for any Loss and Risk to Public Health Resulting from Use of this Code}
 }
 
 \author{

@@ -1,6 +1,6 @@
 check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
                       GMR, alpha0 = 0.05, alpha1 = 0.0294, alpha2 = 0.0294,
-                      theta1, theta2, target = 0.8,
+                      theta1, theta2, target = 0.80,
                       pmethod = c("shifted", "nct", "exact"),
                       int.pwr = TRUE, min.n2 = 0, max.n = Inf, Nmax = Inf,
                       fCrit = c("PE", "CI"), fClow = 0, nsims = 1e6,
@@ -296,7 +296,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   ##            will be shown. Defaults to FALSE.                     ##
   ## ================================================================ ##
   ## Known bugs:                                                      ##
-  ##  - Sample size for stage 2 with n-2 dfs (sampleN.TOST).          ##
+  ##  - None so far.                                                  ##
   ## ================================================================ ##
   ## TODO (not covered yet):                                          ##
   ##  - Parallel groups:                                              ##
@@ -310,9 +310,6 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   ##    14|10. However, the CI (if more balance is incorrectly        ##
   ##    assumed) will be wider and thus conservative.                 ##
   ##    Remedy: Vectorized input of sample sizes.                     ##
-  ##  - CV from the CI in the final analysis: 'Reverse' the function  ##
-  ##    BEpooled() with the correct df.                               ##
-  ##  - Update n2 with new funtrion from Power2Stage.                 ##
   ##  - No alpha-spending in the first stage = (blinded) sample size  ##
   ##    re-estimation acc. to Golkowski et al. 2014. Available in     ##
   ##    function power.2stage.ssr(). Generally needs a /lot/ of ad-   ##
@@ -320,61 +317,8 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   ##    Too many different arguments for my taste - likely better to  ##
   ##    write specific code instead of incorporating it here.         ##
   ######################################################################
-  ## References, settings, adjusted alpha(s):     ##
-  ## ============================================ ##
-  ## Symmetric split of alpha (alpha1 == alpha2). ##
-  ##################################################
-  ## Potvin et al. 2008    http://dx.doi.org/10.1002/pst.294
-  ##   GMR 0.95, power 0.80 (Type 1 [Method B] and 2 [Method C]):
-  ##     alpha1 = alpha2 = 0.0294
-  ## Montague et al. 2011  http://dx.doi.org/10.1002/pst.483
-  ##   GMR 0.90, power 0.80 (Type 2 [Method D]):
-  ##     alpha1 = alpha2 = 0.0280
-  ## Fuglsang 2013         http://dx.doi.org/10.1208/s12248-013-9475-5
-  ##   GMR 0.95, power 0.90 (Type 1 [Method B]):
-  ##     alpha1 = alpha2 = 0.0284
-  ##   GMR 0.95, power 0.90 (Type 2 [Method C/D]):
-  ##     alpha1 = alpha2 = 0.0274
-  ##   GMR 0.90, power 0.90 (Type 2 [Method C/D]):
-  ##     alpha1 = alpha2 = 0.0269
-  ## Fuglsang 2014         http://dx.doi.org/10.1208/s12248-014-9571-1
-  ##   parallel groups
-  ##   GMR 0.95, power 0.80 (Type 1 [Method B] and 2 [Method C]):
-  ##     alpha1 = alpha2 = 0.0294
-  ## Karalis/Macheras 2013 http://dx.doi.org/10.1007/s11095-013-1026-3
-  ##   GMR 0.95, power 0.80 (Type 2 [TSD]):
-  ##     alpha1 = alpha2 = 0.0294
-  ## Karalis 2013          http://dx.doi.org/10.1016/j.ijpharm.2013.08.013
-  ##   GMR 0.95, power 0.80 (Type 2 [TSD-1]):
-  ##     alpha1 = 0.05; alpha2 = 0.0280
-  ##   GMR 0.95, power 0.80 (Type 1 [TSD-2]):
-  ##     alpha1 = alpha2 = 0.0294
-  ## Fuglsang 2014         http://dx.doi.org/10.1208/s12248-013-9540-0
-  ## Kieser & Rauch 2015   http://dx.doi.org/10.1002/sim.6487
-  ##   GMR 0.95, power 0.8 (Type 1 [Method B] and 2 [Method C]):
-  ##     alpha1 = alpha2 = 0.0304
-  ## Schütz 2015           http://dx.doi.org/10.1007/s00228-015-1806-2
-  ########################################################################
-  # Asymmetric split of alpha (alpha1 != alpha2, where alpha2 > alpha1). #
-  ########################################################################
-  ## Haybittle/Peto
-  ##     alpha1 = 0.001; alpha2 = 0.049
-  ## O'Brien/Fleming
-  ##     alpha1 = 0.005; alpha2 = 0.048
-  ## Zheng et al. 2015     http://dx.doi.org/10.1002/pst.1672
-  ##     alpha1 = 0.010; alpha2 = 0.040
-  ## Xu et al. 2015        http://dx.doi.org/10.1002/pst.1721
-  ##   GMR 0.95, power 0.80, CV 10-30% (Type 1 [Method E]):
-  ##     alpha1 = 0.0249; alpha2 = 0.0363
-  ##   GMR 0.95, power 0.80, CV 10-30% (Type 2 [Method F]):
-  ##     alpha1 = 0.0248; alpha2 = 0.0364
-  ##   GMR 0.95, power 0.80, CV 30-55% (Type 1 [Method E]):
-  ##     alpha1 = 0.0254; alpha2 = 0.0357
-  ##   GMR 0.95, power 0.80, CV 30-55% (Type 2 [Method F]):
-  ##     alpha1 = 0.0259; alpha2 = 0.0349
-  ########################################################################
-  # Warning: Change below this line only if you know what you are doing! #
-  ########################################################################
+  # Warning: Change below only if you know what you are doing! #
+  ##############################################################
   exec.start <- strftime(Sys.time(), usetz=TRUE) # Timestamp.
   graphics.off()                                 # Close eventual plots.
   # Check input for completeness and plausibility.
@@ -385,7 +329,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
     if (Var1[length(Var1)] != "CV" &
         Var1[length(Var1)] != "MSE" &
         Var1[length(Var1)] != "CI")
-      stop("last element of Var1 must be 'CV', 'MSE', or 'CI'.")
+      stop("last element of Var1 must be \'CV\', \'MSE\', or \'CI\'.")
     if (stop1) Var <- PE <- N <- NA # Not needed; don't check.
     if (!stop1) { # Not needed if the study stopped in stage 1.
       if (missing(Var) | (length(Var) != 2 & length(Var) != 4))
@@ -393,7 +337,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
       if (Var[length(Var)] != "CV" &
           Var[length(Var)] != "MSE" &
           Var[length(Var)] != "CI")
-        stop("last element of Var must be 'CV', 'MSE', or 'CI'.")
+        stop("last element of Var must be \'CV\', \'MSE\', or \'CI\'.")
     }
     # PEs.
     if (missing(PE1) & length(Var1) != 4)
@@ -412,7 +356,8 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
     if (missing(pmethod)) pmethod <- "nct"
     pmethod <- match.arg(pmethod)
     # Check type of design.
-    if (type < 1 | type > 2) stop("type must be 1 or 2.")
+    type <- as.character(type)
+    if (!type %in% c("1", "2", "MSDBE")) stop("type must be 1, 2, or \'MSDBE\'.")
     # Futility criterion default and checking.
     if (missing(fCrit)) fCrit <- "PE"
     fCrit <- match.arg(fCrit)
@@ -442,54 +387,6 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
     }
   }
 
-  ############################
-  # Various helper functions #
-  ##########################################################
-  # Partition n into grps with 'best' balance between grps #
-  ##########################################################
-  nvec <- function(n, grps) {
-    ni <- trunc(n/grps)
-    nv <- rep.int(ni, times=grps)
-    rest <- n-grps*ni
-    if(rest!=0){
-      nv <- nv + c(rep.int(1,rest), rep.int(0,grps-rest))
-    }
-    return(nv)
-  }
-
-  ####################################################################
-  # Calculates the CV from the CI in the final analysis taking the   #
-  # loss of one df for the factor 'stage' in the model into account. #
-  # Simplified from PowerTOST's CVfromCI()                           #
-  ####################################################################
-  CVfromFinalCI <- function(lower, upper, alpha=0.0294, n, design="2x2x2") {
-    pe <- sqrt(lower*upper)
-    if (length(n) == 1) {
-      # n given as ntotal
-      n <- nvec(n = n, grps = 2)
-      if (n[1] != n[length(n)]) {
-        message("Unbalanced ", design, " design. n(i)= ",
-                paste(n, collapse = "/"), " assumed.")
-      }
-    } else {
-      # n given as vector of No. of subjects in (sequence) groups
-      if (length(n) != 2) stop("Length of n vector must be 2!")
-    }
-    nc     <- sum(1/n)
-    n      <- sum(n)
-    if (design == "parallel") bkni <- 1 else bkni <- 0.5
-    se.fac <- sqrt(bkni * nc)
-    df     <- n-3 # One df less than usual ('stage' in the model).
-    tval   <- qt(1 - alpha, df)
-    s1     <- (log(pe) - log(lower))/se.fac/tval
-    s2     <- (log(upper) - log(pe))/se.fac/tval
-    sw     <- 0.5 * (s1 + s2)
-    if (abs(s1 - s2)/sw > 0.1) {
-      warning(paste("sigma based on pe & lower CL more than 10% different than\n",
-                    "sigma based on pe & upper CL. Check input."))
-    }
-    return(se2CV(sw))
-  }
   ########################################################
   # The workhorse for optimization. Called by uniroot(). #
   ########################################################
@@ -524,222 +421,50 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
     }
   }
 
-  #########################################################
-  # Function to estimate the TIE for the given conditions #
-  # in stage 1.                                           #
-  #########################################################
-  TIE1.est <- function(meth, alpha0, alpha1, alpha2, n1, GMR, CV1, target,
-                       pmethod, usePE, int.pwr, min.n2, max.n, Nmax, fCrit,
-                       fClow, theta2, nsims, setseed, KM, asym) {
-    if (asym) alpha12 <- c(alpha1, alpha2) else alpha12 <- rep(alpha2, 2)
-    if (!KM) { # Common methods.
-      if (Xover) { # Crossover.
-        power.2stage.fC(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
-                        GMR=GMR, CV=CV1, targetpower=target,
-                        pmethod=pmethod, usePE=usePE, powerstep=int.pwr,
-                        min.n2=min.n2, max.n=max.n, fCrit=fCrit,
-                        fClower=fClow, theta0=theta2, nsims=nsims,
-                        setseed=setseed)$pBE_s1
-      } else {     # Parallel.
-        power.2stage.p(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
-                       GMR=GMR, CV=CV1, targetpower=target,
-                       pmethod=pmethod, usePE=usePE, Nmax=Nmax,
-                       test="welch", theta0=theta2, nsims=nsims,
-                       setseed=setseed)$pBE_s1
-      }
-    } else {       # Adaptive (Karalis/Macheras and Karalis).
-      power.2stage.KM(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
-                      CV=CV1, targetpower=target, pmethod=pmethod,
-                      Nmax=Nmax, theta0=theta2, nsims=nsims,
-                      setseed=setseed)$pBE_s1
-    }
-  }
-
-  #########################################################
-  # Function to estimate the TIE for the given conditions #
-  # in the final analysis.                                #
-  #########################################################
-  TIE.est <- function(meth, alpha0, alpha1, alpha2, n1, GMR, CV1, target,
-                      pmethod, usePE, int.pwr, min.n2, max.n, Nmax, fCrit,
-                      fClow, theta2, nsims, setseed, KM, asym) {
-    if (asym) alpha12 <- c(alpha1, alpha2) else alpha12 <- rep(alpha2, 2)
-    if (!KM) { # Common methods.
-      if (Xover) { # Crossover.
-        power.2stage.fC(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
-                        GMR=GMR, CV=CV1, targetpower=target,
-                        pmethod=pmethod, usePE=usePE, powerstep=int.pwr,
-                        min.n2=min.n2, max.n=max.n, fCrit=fCrit,
-                        fClower=fClow, theta0=theta2, nsims=nsims,
-                        setseed=setseed)$pBE
-      } else {     # Parallel.
-        power.2stage.p(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
-                       GMR=GMR, CV=CV1, targetpower=target,
-                       pmethod=pmethod, usePE=usePE, Nmax=Nmax,
-                       test="welch", theta0=theta2, nsims=nsims,
-                       setseed=setseed)$pBE
-      }
-    } else {       # Adaptive (Karalis/Macheras and Karalis).
-      power.2stage.KM(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
-                      CV=CV1, targetpower=target, pmethod=pmethod,
-                      Nmax=Nmax, theta0=theta2, nsims=nsims,
-                      setseed=setseed)$pBE
-    }
-  }
-
-  #######################################################
-  # Function to estimate power for the given conditions #
-  # in the final analysis.                              #
-  #######################################################
-  pwr.est <- function(meth, alpha0, alpha1, alpha2, n1, GMR, CV1, target,
-                      pmethod, usePE, int.pwr, min.n2, max.n, Nmax, fCrit,
-                      fClow, nsims, setseed, KM, asym) {
-    if (asym) alpha12 <- c(alpha1, alpha2) else alpha12 <- rep(alpha2, 2)
-    if (!KM) { # Common methods.
-      if (Xover) { # Crossover.
-        power.2stage.fC(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
-                        GMR=GMR, CV=CV1, targetpower=target, pmethod=pmethod,
-                        usePE=usePE, powerstep=int.pwr, min.n2=min.n2,
-                        max.n=max.n, fCrit=fCrit, fClower=fClow, theta0=GMR,
-                        nsims=1e5, setseed=setseed)
-      } else {     # Parallel.
-        power.2stage.p(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
-                       GMR=GMR, CV=CV1, targetpower=target, pmethod=pmethod,
-                       usePE=usePE, Nmax=Nmax, test="welch", theta0=GMR,
-                       nsims=1e5, setseed=setseed)
-      }
-    } else {       # Adaptive (Karalis/Macheras and Karalis).
-      power.2stage.KM(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
-                      CV=CV1, targetpower=target, pmethod=pmethod,
-                      Nmax=Nmax, theta0=GMR, nsims=1e5,
-                      setseed=setseed)
-    }
-  }
-
-  ##########################################
-  # Function for BE in the final analysis. #
-  ##########################################
-  BEpooled <- function(alpha, pe, CV, n, design) {
-    n  <- nvec(n, 2) # vectorize
-    df <- n[1]+n[2]-3  # one df less than usual (stage in the model!)
-    nc <- sum(1/n)
-    n  <- sum(n)
-    if (design == "2x2x2") {
-      bk   <- 2   # 2x2x2 crossover design const
-      bkni <- 0.5 # design constant in terms of n(i)
-    }
-    if (design == "parallel") {
-      bk   <- 4   # 2-group parallel design constant
-      bkni <- 1   # design constant in terms of n(i)
-    }
-    mse       <- CV2mse(CV)
-    diff      <- log(PE)
-    CI        <- exp(diff + c(-1, +1)*qt(1-alpha, df=df)*sqrt(mse*bkni*nc))
-    names(CI) <- c("lower", "upper")
-    return(CI)
-  }
-
-  #############################################
-  # Validation data sets and their conditions #
-  #############################################
+  ########################
+  # Validation examples  #
+  ########################
   if (valid) {
-    theta1 <- 0.8; theta2 <- 1.25
-    if (expl == 0) expl <- 3 # Default
-    if (expl >= 1 & expl <= 4) { # Potvin et al.
-      GMR <- 0.95; target <- 0.8; pmethod<- "shifted"; usePE <- FALSE
-      int.pwr <- TRUE; min.n2 <- 0; max.n <- Nmax <- Inf; fCrit  <- "PE"
-      fClow  <- 0; setseed <- skip <- TRUE
-      alpha1 <- alpha2 <- 0.0294
-    }
-    if (expl == 1 | expl == 2) { # Example 1
-      Var1 <- c(0.020977, "MSE"); PE1 <- c(0.16785, "difflog"); n1 <- 12
-      Var  <- c(0.021224, "MSE"); PE  <- c(0.14401, "difflog"); N  <- 14
-    }
-    if (expl == 2) stop1 <- TRUE
-    if (expl == 1) type <- 1; if (expl == 2) type <- 2 # Method B or C
-    if (expl == 3 | expl == 4) { # Example 2
-      Var1 <- c(0.032634, "MSE"); PE1 <- c(0.08396,  "difflog"); n1 <- 12
-      Var  <- c(0.045896, "MSE"); PE  <- c(0.014439, "difflog"); N  <- 20
-    }
-    if (expl == 3) type <- 1; if (expl == 4) type <- 2 # Method B or C
-    if (expl == 5) { # Montague et al. D at the location of the maximum TIE.
-      GMR <- 0.90; target <- 0.8; pmethod<- "shifted"; usePE <- FALSE
-      int.pwr <- TRUE; min.n2 <- 0; max.n <- Nmax <- Inf; fCrit <- "PE"
-      fClow  <- 0; setseed <- skip <- TRUE; type <- 2
-      alpha1 <- alpha2 <- 0.0280
-      Var1 <- c(0.20, "CV");  PE1 <- c(0.92,  "ratio"); n1 <- 12
-      Var  <- c(0.23315, "CV"); PE  <- c(0.88, "ratio"); N <- 45 # one dropout
-    }
-    if (expl == 6) { # Haybittle/Peto.
-      GMR <- 0.95; target <- 0.8; pmethod<- "nct"; usePE <- FALSE
-      int.pwr <- TRUE; min.n2 <- 0; max.n <- Nmax <- Inf; fCrit <- "PE"
-      fClow  <- 0; setseed <- skip <- TRUE; type <- 1; pa <- TRUE
-      alpha1 <- 0.001; alpha2 <- 0.049
-      Var1 <- c(0.20, "CV"); PE1 <- c(0.94, "ratio"); n1 <- 12
-      Var  <- c(0.24, "CV"); PE  <- c(0.92, "ratio"); N  <- 19 # one dropout
-    }
-    if (expl == 7) { # Zheng et al.
-      GMR <- 0.95; target <- 0.8; pmethod<- "shifted"; usePE <- FALSE
-      int.pwr <- TRUE; min.n2 <- 0; max.n <- Nmax <- Inf; fCrit <- "PE"
-      fClow  <- 0; setseed <- skip <- TRUE; type <- 1; pa <- TRUE
-      alpha1 <- 0.01; alpha2 <- 0.04; nsims <- 20000
-      Var1 <- c(0.30, "CV"); PE1 <- c(0.95, "ratio"); n1 <- 12
-      Var  <- c(0.30, "CV"); PE  <- c(0.95, "ratio"); N  <- 42
-      meth <- "B0"
-    }
-    if (expl == 8 | expl == 9) { # Xu et al. high CVs
-      GMR <- 0.95; target <- 0.8; pmethod<- "shifted"; usePE <- FALSE
-      int.pwr <- TRUE; min.n2 <- 0; max.n <- Nmax <- 180; fCrit <- "CI"
-      setseed <- skip <- TRUE
-      Var1 <- c(0.483, "CV"); PE1 <- c(0.943, "ratio"); n1 <-  48
-      Var  <- c(0.429, "CV"); PE  <- c(1.01, "ratio");  N  <- 104
-      if (expl == 8) { # Method E
-        type <- 1; alpha1 <- 0.0254; alpha2 <- 0.0357; fClow <- 0.9305
-      } else {         # Method F
-        type <- 2; alpha1 <- 0.0259; alpha2 <- 0.0349; fClow <- 0.9350
-      }
-    }
-    if (expl == 10) { # Fuglsang 2013, Method B, GMR 0.95, power 0.90
-      GMR <- 0.95; target <- 0.9; pmethod<- "shifted"; usePE <- FALSE
-      int.pwr <- TRUE; min.n2 <- 0; max.n <- Nmax <- Inf; fCrit <- "PE"
-      fClow  <- 0; setseed <- skip <- TRUE; type <- 1
-      alpha1 <- alpha2 <- 0.0284
-      Var1 <- c(0.5, "CV");  PE1 <- c(0.93, "ratio"); n1 <- 60
-      Var  <- c(0.55, "CV"); PE  <- c(0.92, "ratio"); N  <- 156
-    }
-    if (expl == 11) { # Fuglsang 2013, Method C/D, GMR 0.90, power=0.90
-      GMR <- 0.9; target <- 0.9; pmethod<- "shifted"; usePE <- FALSE
-      int.pwr <- TRUE; min.n2 <- 0; max.n <- Nmax <- Inf; fCrit <- "PE"
-      fClow  <- 0; setseed <- skip <- TRUE; type <- 2
-      alpha1 <- alpha2 <- 0.0269
-      Var1 <- c(0.2, "CV");  PE1 <- c(0.88, "ratio"); n1 <- 12
-      Var  <- c(0.22, "CV"); PE  <- c(0.89, "ratio"); N  <- 62
-    }
-    if (expl == 12) { # parallel Type 2, GMR 0.95, power=0.80
-      GMR <- 0.95; target <- 0.8; pmethod<- "shifted"; usePE <- FALSE
-      int.pwr <- TRUE; min.n2 <- 0; max.n <- Nmax <- Inf; fCrit <- "PE"
-      fClow  <- 0; setseed <- skip <- TRUE; type <- 2; pa <- TRUE
-      alpha1 <- alpha2 <- 0.0294; Xover <- FALSE
-      Var1 <- c(0.40, "CV"); PE1 <- c(0.95, "ratio"); n1 <- c(60, 60)
-      Var  <- c(0.40, "CV"); PE  <- c(0.95, "ratio"); N  <- 156
-    }
-    if (expl == 13) { # Karalis/Macheras TSD, GMR 0.95, power=0.80
-      GMR <- 0.95; target <- 0.8; pmethod<- "nct"; usePE <- TRUE
-      int.pwr <- TRUE; min.n2 <- 0; Nmax <- 150; fCrit <- "PE"
-      fClow  <- 0.8; setseed <- skip <- TRUE; type <- 2; nsims=1e5
-      alpha1 <- alpha2 <- 0.0294; Xover <- TRUE; KM <- TRUE; KM.des <- "TSD"
-      Var1 <- c(0.2, "CV"); PE1 <- c(0.95, "ratio"); n1 <- 12
-      Var  <- c(0.21672, "CV"); PE  <- c(0.9195, "ratio"); N  <- 24
-    }
-    if (expl == 14) { # one BEBAC's studies; stopped in the interim for BE
-      GMR <- 0.95; target <- 0.8; pmethod<- "exact"; usePE <- FALSE
-      int.pwr <- TRUE; min.n2 <- 0; Nmax <- Inf; fCrit <- "PE"
-      fClow  <- 0; setseed <- skip <- TRUE; type <- 2; stop1 = TRUE
-      alpha1 <- alpha2 <- 0.0294
-      Var1 <- c(0.0108779, "MSE"); PE1 <- c(0.05132263, "difflog"); n1 <- 18
-    }
-  } # End of validation datasets.
+    # retrieve data
+    # allow overruling some arguments to explore impact
+    res <- example(expl)
+    alpha0  <- res$alpha0
+    if (missing(alpha1))  alpha1  <- res$alpha1
+    if (missing(alpha2))  alpha2  <- res$alpha2
+    if (missing(GMR))     GMR     <- res$GMR
+    if (missing(target))  target  <- res$target
+    theta1  <- res$theta1
+    theta2  <- res$theta2
+    if (missing(pmethod)) pmethod <- res$pmethod
+    if (missing(type))     type    <- res$type
+    Xover   <- res$Xover
+    if (missing(usePE))   usePE   <- res$usePE
+    if (missing(int.pwr)) int.pwr <- res$int.pwr
+    if (missing(min.n2))  min.n2  <- res$min.n2
+    if (missing(max.n))   max.n   <- res$max.n
+    if (missing(Nmax))    Nmax    <- res$Nmax
+    if (missing(fCrit))   fCrit   <- res$fCrit
+    if (missing(fClow))   fClow   <- res$fClow
+    if (missing(stop1))   stop1   <- res$stop1
+    if (missing(setseed)) setseed <- res$setseed
+    if (missing(nsims))   nsims   <- res$nsims
+    if (missing(tol))     tol     <- res$tol
+    if (missing(algo))    algo    <- res$algo
+    if (missing(plot.it)) plot.it <- res$plot.it
+    if (missing(skip))    skip    <- res$skip
+    KM      <- res$KM
+    KM.des  <- res$KM.des
+    if (missing(CIs))     CIs     <- res$CIs
+    Var1    <- res$Var1
+    PE1     <- res$PE1
+    n1      <- res$n1
+    Var     <- res$Var
+    PE      <- res$PE
+    N       <- res$N
+    info    <- res$info
+  } # End of validation examples.
 
-  # Create the "method"-argument for PowerTOST.
+  # Create the "method"-argument for PowerTOST and Power2Stage.
   if (Xover) {
     design <- "2x2x2"
     if (length(n1) > 1) {
@@ -765,8 +490,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
     # Suppress messages regarding unbalanced designs.
     suppressMessages(
       CV1 <- CVfromCI(lower=as.double(Var1[1]), upper=as.double(Var1[2]),
-                      alpha=as.double(Var1[3]), n=n1, design=design)
-    )
+                      alpha=as.double(Var1[3]), n=n1, design=design) )
   }
   # Pooled data.
   if(!stop1) { # Not needed if stopped.
@@ -778,8 +502,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
       # Suppress messages regarding unbalanced designs.
       suppressMessages(
         CV <- CVfromFinalCI(lower=as.double(Var[1]), upper=as.double(Var[2]),
-                            alpha=as.double(Var[3]), n=N, design=design)
-      )
+                            alpha=as.double(Var[3]), n=N, design=design) )
     }
   }
 
@@ -879,7 +602,11 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   }
 
   # Convert type 1 or 2 to argument "B" or "C" for the function-calls.
-  meth <- intToUtf8(65 + type)
+  if (type == "MSDBE") {
+    meth <- "B0"
+  } else {
+    meth <- intToUtf8(65 + type)
+  }
 
   # Assessment text.
   pass <- "(BE concluded)"
@@ -907,7 +634,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
         }
         if (alpha1 == 0.0254 & alpha2 == 0.0357 & fClow == 0.9305) {
           des.type <- paste(type, "(Xu et al. 2015, Method E, high CVs)")
-          if (CV1 <= 0.3 | n1 < 12 | GMR != 0.95 | target != 0.8 |
+          if (CV1 < 0.3 | CV1 > 0.55 | n1 < 48 | GMR != 0.95 | target != 0.8 |
               n1 > 60 | max.n > 180) outside.range <- TRUE
         }
         if (nchar(des.type) == 1) des.type <- paste(type, "(user specified)")
@@ -937,13 +664,13 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
         if (alpha1 == 0.0248 & alpha2 == 0.0364 & min.n2 == 0 &
             fClow == 0.9492) {
           des.type <- paste(type, "(Xu et al. 2015, Method F, low CVs)")
-          if (CV1 > 0.3 | n1 < 12 | GMR != 0.95 | target != 0.8 |
+          if (CV1 > 0.3 | n1 < 18 | GMR != 0.95 | target != 0.8 |
               n1 > 30 | max.n > 42) outside.range <- TRUE
         }
         if (alpha1 == 0.0259 & alpha2 == 0.0349 & min.n2 == 0 &
             fClow == 0.9350) {
           des.type <- paste(type, "(Xu et al. 2016, Method F, high CVs)")
-          if (CV1 <= 0.3 | n1 < 12 | GMR != 0.95 | target != 0.8 |
+          if (CV1 < 0.3 | CV1 > 0.55 | n1 < 48 | GMR != 0.95 | target != 0.8 |
               n1 > 60 | max.n > 180) outside.range <- TRUE
         }
         if (nchar(des.type) == 1) des.type <- paste(type, "(user specified)")
@@ -975,6 +702,10 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
         if (nchar(des.type) == 1) des.type <- paste(type, "(user specified)")
       }
     }
+  }
+  if (type == "MSDBE") {
+    if (alpha1 == 0.01 & alpha2 == 0.04)
+      des.type <- paste(type, "(Zheng 2015)")
   }
 
   # Fixed GMR or fully adaptive?
@@ -1029,7 +760,6 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
       maxN.check <- Nmax
     }
   }
-  # browser() # Check input and variables.
   txt <- paste(paste0("\n", hr,
                       "\nSystem             : ", node,
                       "\nUser               : ", user,
@@ -1050,98 +780,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
 
   if (valid) {
     txt <- paste(txt, "\nValidation;")
-    if (expl == 1) {
-      txt <- paste(txt, paste0("internal expl == 1\n", hr,
-                               "\nPotvin et al. 2008 (doi 10.1002/pst.294) target power 80%"),
-                   "\nExample 1, Method B. Reported results (power for GMR 0.95):",
-                   "\nInterim analyis: 94.12% CI: 104.27\u2013134.17% (power 75.6%)",
-                   "\nFinal analysis : 94.12% CI: 102.83\u2013129.71% (power NR)\n")
-    }
-    if (expl == 2) {
-      txt <- paste(txt, paste0("internal expl == 1\n", hr,
-                               "\nPotvin et al. 2008 (doi 10.1002/pst.294) target power 80%"),
-                   "\nExample 1, Method C. Reported results (power for GMR 0.95):",
-                   "\nInterim analyis: 90.00% CI: 106.26\u2013131.66% (power 84.1%)",
-                   "\nFinal analysis : NA (stopped in the interim)\n")
-    }
-    if (expl == 3) {
-      txt <- paste(txt, paste0("internal expl == 3\n", hr,
-                               "\nPotvin et al. 2008 (doi 10.1002/pst.294) target power 80%"),
-                   "\nExample 2, Method B. Reported results (power for GMR 0.95):",
-                   "\nInterim analyis: 94.12% CI: 92.93\u2013127.28% (power 50.5%)",
-                   "\nFinal analysis : 94.12% CI: 88.45\u2013116.38% (power 66.3%)\n")
-    }
-    if (expl == 4) {
-      txt <- paste(txt, paste0("internal expl == 4\n", hr,
-                               "\nPotvin et al. 2008 (doi 10.1002/pst.294) target power 80%"),
-                   "\nExample 2, Method C. Reported results (power for GMR 0.95):",
-                   "\nInterim analyis: 94.12% CI: 92.93\u2013127.28% (power 64.9%)",
-                   "\nFinal analysis : 94.12% CI: 88.45\u2013116.38% (power 66.3%)\n")
-    }
-    if (expl == 5) {
-      txt <- paste(txt, paste0("internal expl == 5\n", hr,
-                               "\nMontague et al. 2011 (doi 10.1002/pst.483) target power 80%"),
-                   "\nMethod D. GMR 0.90:",
-                   "\nTable I. Maximum TIE at n1 12 and CV 20%: 0.0518\n")
-    }
-    if (expl == 6) {
-      txt <- paste(txt, paste0("internal expl == 6\n", hr,
-                               "\nHaybittle/Peto, GMR 0.95, target power 80%\n"))
-    }
-    if (expl == 7) {
-      txt <- paste(txt, paste0("internal expl == 7\n", hr,
-                               "\nZheng et al. 2015 (doi 10.1002/pst.1672)"),
-                   "\nMSDBE (GMR 0.95, target power 80%)",
-                   "\nn1 12, CV 30%, 20,000 simulations",
-                   "\nTable I  : TIE   0.046",
-                   "\nTable III: power 0.775\n")
-    }
-    if (expl == 8) {
-      txt <- paste(txt, paste0("internal expl == 8\n", hr,
-                               "\nXu et al. 2015 (doi 10.1002/pst.1721) target power 80%"),
-                   "\nMethod E for ISCV 30\u201350%. Reported results (power for GMR 0.95):",
-                   "\nInterim analyis: 94.92% CI: 78\u2013114% (power 35.8%)",
-                   "\nFinal analysis : 92.86% CI: 91\u2013112% (power NR)\n")
-    }
-    if (expl == 9) {
-      txt <- paste(txt, paste0("internal expl == 9\n", hr,
-                               "\nXu et al. 2015 (doi 10.1002/pst.1721) target power 80%"),
-                   "\nMethod F for ISCV 30\u201350%. Reported results (power for GMR 0.95):",
-                   "\nInterim analyis: 94.82% CI: 78\u2013114% (power 48.7%)",
-                   "\nFinal analysis : 93.02% CI: 91\u2013112% (power NR)\n")
-    }
-    if (expl == 10) {
-      txt <- paste(txt, paste0("internal expl == 10\n", hr,
-                               "\nFuglsang 2013 (doi 10.1208/s12248-013-9475-5) target power 90%"),
-                   "\nMethod B. GMR 0.95:",
-                   "\nTable I. Maximum TIE at n1 60 and CV 50%: 0.0501\n")
-    }
-    if (expl == 11) {
-      txt <- paste(txt, paste0("internal expl == 11\n", hr,
-                               "\nFuglsang 2013 (doi 10.1208/s12248-013-9475-5) target power 90%"),
-                   "\nMethod C/D. GMR 0.90:",
-                   "\nTable I. Maximum TIE at n1 12 and CV 20%: 0.0501\n")
-    }
-    if (expl == 12) {
-      txt <- paste(txt, paste0("internal expl == 12\n", hr,
-                               "\nFuglsang 2014 (doi 10.1208/s12248-014-9571-1) target power 80%"),
-                   "\nParallel groups. Method C. GMR 0.95:",
-                   "\nTable II. At n1 120 and CV 40%: TIE 0.0454, power 0.830\n")
-    }
-    if (expl == 13) {
-      txt <- paste(txt, paste0("internal expl == 12\n", hr,
-                               "\nKaralis/Macheras 2013 (doi 10.1007/s11095-013-1026-3) target power 80%"),
-                   "\nAdaptive TSD (modified C):",
-                   "\nTable II. TIE at n1 12 and CV 20%: 0.0446 (100,000 simulations)\n")
-    }
-    if (expl == 14) {
-      txt <- paste(txt, paste0("internal expl == 14\n", hr,
-                               "\nBEBAC 0110804, target power 80%, BE in the interim."),
-                   "\nPhoenix/WinNonlin (subject=random), PowerTOST (method=\"exact\").",
-                   "\nMethod C. Reported results (power for GMR 0.95):",
-                   "\nInterim analyis: 90.00% CI: 99.07\u2013111.85% (power 99.90%)",
-                   "\nFinal analysis : NA (stopped in the interim)\n")
-    }
+    txt <- paste(txt, info)
   }
   cond <- paste(txt,
                 "\nStudy conditions and assessment of empiric Type I Error",
@@ -1175,10 +814,10 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
                             100*(1-2*alpha1), 100*(1-2*alpha2)))
     } else {
       cond <- paste(cond, "\nSpecified \u03B1 1, 2   :",
-                    paste0(sprintf("%.3f", alpha0), "|",
+                    paste0(sprintf("%.3f", alpha0), " | ",
                            sprintf("%.4f, %.4f", alpha1, alpha2)),
                     "\nSpecified CIs      :",
-                    paste0(sprintf("%.2f%%", 100*(1-2*alpha0)), "|",
+                    paste0(sprintf("%.2f%%", 100*(1-2*alpha0)), " | ",
                            sprintf("%.2f%%, %.2f%%",
                                    100*(1-2*alpha1), 100*(1-2*alpha2))))
     }
@@ -1191,10 +830,10 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
                             100*(1-2*alpha1), 100*(1-2*alpha2)))
     } else {
       cond <- paste(cond, "\nSpecified \u03B1 1, 2   :",
-                    paste0(sprintf("%.3f", alpha0), "|",
+                    paste0(sprintf("%.3f", alpha0), " | ",
                            sprintf("%.4f, %.4f", alpha1, alpha2)),
                     "\nSpecified CIs      :",
-                    paste0(sprintf("%.2f%%", 100*(1-2*alpha0)), "|",
+                    paste0(sprintf("%.2f%%", 100*(1-2*alpha0)), " | ",
                            sprintf("%.2f%%, %.2f%%",
                                    100*(1-2*alpha1), 100*(1-2*alpha2))))
     }
@@ -1212,22 +851,24 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
     TIE.interim.est <- TIE.est(meth, alpha0, alpha1, alpha2, n1, GMR,
                                CV1, target, pmethod, usePE, int.pwr,
                                min.n2, max.n, Nmax, fCrit, fClow,
-                               theta2, nsims, setseed, KM, asym)
+                               theta2, nsims, setseed, KM, asym, Xover)
     # 95% CI of empiric TIE
-    TIE.CI1 <- binom.test(TIE.interim.est*nsims, nsims, alternative="two.sided")$conf.int[1:2]
+    TIE.CI1 <- binom.test(TIE.interim.est*nsims, nsims,
+                          alternative="two.sided")$conf.int[1:2]
     if (pa) {
       pwr.interim.est <- pwr.est(meth, alpha0, alpha1, alpha2, n1, GMR,
                                  CV1, target, pmethod, usePE, int.pwr,
                                  min.n2, max.n, Nmax, fCrit, fClow,
-                                 nsims, setseed, KM, asym)
+                                 nsims, setseed, KM, asym, Xover)
     }
   } else {      # Study stopped in the interim.
     TIE.interim.est <- TIE1.est(meth, alpha0, alpha1, alpha2, n1, GMR,
                                 CV1, target, pmethod, usePE, int.pwr,
                                 min.n2, max.n, Nmax, fCrit, fClow,
-                                theta2, nsims, setseed, KM, asym)
+                                theta2, nsims, setseed, KM, asym, Xover)
     # 95% CI of empiric TIE
-    TIE.CI1 <- binom.test(TIE.interim.est*nsims, nsims, alternative="two.sided")$conf.int[1:2]
+    TIE.CI1 <- binom.test(TIE.interim.est*nsims, nsims,
+                          alternative="two.sided")$conf.int[1:2]
     # Inflated TIE for specified alpha(s)?
     justif <- paste("\n\nTIE for specified \u03B1:", sprintf("%1.5f",
                                                              TIE.interim.est))
@@ -1359,7 +1000,6 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
       TIE.set   <- rep(NA, length(alpha.set))
       pb <- txtProgressBar(0, 1, 0, char="\u2588", width=NA, style=3)
       for (j in seq_along(alpha.set)) {
-        setTxtProgressBar(pb, j/length(alpha.set))
         if (asym) {
           alpha12 <- c(alpha1, alpha.set[j])
         } else {
@@ -1368,7 +1008,8 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
         TIE.set[j] <- TIE.est(meth, alpha0, alpha12[1], alpha12[2], n1,
                               GMR, CV1, target, pmethod, usePE, int.pwr,
                               min.n2, max.n, Nmax, fCrit, fClow, theta2,
-                              nsims, setseed, KM, asym)
+                              nsims, setseed, KM, asym, Xover)
+        setTxtProgressBar(pb, j/length(alpha.set))
       }
       close(pb)
       alpha.set <- c(alpha.set, adj[2]) # Add the result
@@ -1401,6 +1042,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
         }
         points(sort(alpha.set), sort(fitted(mod2)), type="l", col="red")
       }
+      abline(v=best)
       legend("topleft", inset=0.02, bg="white", box.lty=0, y.intersp=1.25,
              legend=c(
                paste0("\u03b1-range (fixed seed; ", fit, " fit)"),
@@ -1415,7 +1057,6 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
              lty=c(1, 1, 1, 2, 1))
       points(alpha.set, TIE.set, cex=1.25, pch=21,
              col="#FF0000AA", bg="#FFD700AA")
-      abline(v=best)
       points(x$root, TIE, cex=2, pch=21, col="blue", bg=NA)
       if (!asym) { # Same adjusted alphas in both stages.
         adj <- rep(best, 2)
@@ -1424,7 +1065,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
       }
       TIE <- TIE.est(meth, alpha0, adj[1], adj[2], n1, GMR, CV1, target,
                      pmethod, usePE, int.pwr, min.n2, max.n, Nmax, fCrit,
-                     fClow, theta2, nsims, setseed, KM, asym)
+                     fClow, theta2, nsims, setseed, KM, asym, Xover)
       points(adj[2], TIE, cex=2, pch=21, col="black", bg=NA)
       par(op) # reset options
       run.time2 <- proc.time() - ptm
@@ -1443,7 +1084,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
     pwr.interim.adj <- pwr.est(meth, alpha0, adj[1], adj[2], n1, GMR, CV1,
                                target, pmethod, usePE, int.pwr, min.n2,
                                max.n, Nmax, fCrit, fClow, nsims, setseed,
-                               KM, asym)
+                               KM, asym, Xover)
   }
   # Collect data for console output.
   # Inflated TIE for specified alpha(s)?
@@ -1782,8 +1423,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   # BE in the final analysis.
   # Caution: Welch-test not implemented yet!
   # Original alpha(s).
-  BE.spec <- round(100*BEpooled(alpha=alpha2, pe=PE, CV=CV,
-                                n=N, design=design), 2)
+  BE.spec <- round(100*BEpooled(alpha2, PE, CV=CV, N, design), 2)
   if (BE.spec[["lower"]] >= 80 & BE.spec[["upper"]] <= 125) {
     BE.spec.assess <- pass
   } else {
@@ -1800,8 +1440,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   }
   if (!skip | TIE.interim.est > alpha0) {
     # Adjusted alpha(s).
-    BE.adj <- round(100*BEpooled(alpha=adj[2], pe=PE, CV=CV,
-                                 n=N, design=design), 2)
+    BE.adj <- round(100*BEpooled(adj[2], PE, CV, N, design), 2)
     if (BE.adj[["lower"]] >= 80 & BE.adj[["upper"]] <= 125) {
       BE.adj.assess <- pass
     } else {
@@ -1816,7 +1455,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
     }
   }
 
-  # Sample size plots if applicable.
+  # Needle plots of total sample size N.
   if (pa & (TIE.interim.est > alpha0)) {
     dev.new(record=TRUE)
     op <- par(no.readonly=TRUE) # save par() options
@@ -1944,10 +1583,10 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
                            100*(1-2*adj[1]), 100*(1-2*adj[2])))
     } else {
       txt <- paste(txt, "\nAdjusted \u03B1 1, 2    :",
-                   paste0(sprintf("%.3f", alpha0), "|",
+                   paste0(sprintf("%.3f", alpha0), " | ",
                           sprintf("%.5f, %.5f", adj[1], adj[2])),
                    "\nAdjusted CIs       :",
-                   paste0(sprintf("%.2f%%", 100*(1-2*alpha0)), "|",
+                   paste0(sprintf("%.2f%%", 100*(1-2*alpha0)), " | ",
                           sprintf("%.2f%%, %.2f%%",
                                   100*(1-2*adj[1]), 100*(1-2*adj[2]))))
     }
@@ -2000,14 +1639,14 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
         txt <- paste(txt,
                      paste0("\n\n\u250C", paste0(rep("\u2500", 55), collapse=""), "\u2510",
                             "\n\u2502 The study could have demonstrated BE with adjusted \u03B1. \u2502",
-                            "\n\u2502 However, this is not of regulatory concern.           \u2502",
+                            "\n\u2502 However, this is not of a regulatory concern.         \u2502",
                             "\n\u2514", paste0(rep("\u2500", 55), collapse=""), "\u2518\n"))
       }
     }
   }
-  txt <- paste(txt, "\nPROGRAM OFFERED FOR USE WITHOUT ANY GUARANTEES AND ABSOLUTELY",
-               "\nNO WARRANTY. NO LIABILITY IS ACCEPTED FOR ANY LOSS AND RISK",
-               "\nTO PUBLIC HEALTH RESULTING FROM USE OF THIS R-CODE.")
+  txt <- paste(txt, "\nProgram offered for Use without any Guarantees and Absolutely",
+               "\nNo Warranty. No Liability is accepted for any Loss and Risk",
+               "\nto Public Health Resulting from Use of this Code.")
 
   if (plot.it & (TIE.interim.est > alpha0)) {
     ylim <- c(0.95*min(80, BE.spec, BE.adj, 125),
@@ -2031,6 +1670,8 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
     box()
     points(1:2, rep(100*PE, 2), pch=22, cex=1.5)
     text(1.5, 100*PE, sprintf("%.2f%%", 100*PE), cex=0.9)
+    text(1, 100*PE, gsub("[()]", "", BE.spec.assess), pos=2)
+    text(2, 100*PE, gsub("[()]", "", BE.adj.assess), pos=4)
     arrows(1, BE.spec[["lower"]], 1, BE.spec[["upper"]], angle=90, code=3)
     text(1, BE.spec[["lower"]], pos=1, cex=0.9,
          labels=sprintf("%.2f%%", BE.spec[["lower"]]))
