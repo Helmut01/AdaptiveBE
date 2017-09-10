@@ -605,7 +605,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   if (type == "MSDBE") {
     meth <- "B0"
   } else {
-    meth <- intToUtf8(65 + type)
+    meth <- intToUtf8(65 + as.integer(type))
   }
 
   # Assessment text.
