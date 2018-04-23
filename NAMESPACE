@@ -9,16 +9,16 @@ importFrom(utils,
            flush.console, citation, sessionInfo, packageVersion,
            setTxtProgressBar, txtProgressBar)
 importFrom(stats,
-           qt, pt, qnorm, pnorm, uniroot, binom.test,
-           lm, coef, fitted, extractAIC, median)
+           qt, pt, qnorm, pnorm, uniroot, binom.test, lm, coef,
+           fitted, extractAIC, median)
 importFrom(graphics,
            abline, box, grid, par, plot, points, legend, text,
            mtext, axis, arrows, title)
 importFrom(grDevices,
            graphics.off, dev.new)
-importFrom(mvtnorm, qmvnorm)
-importFrom(plot3D, ramp.col, persp3D, contour3D, colkey, lines3D,
-           rect3D, text3D)
+#importFrom(mvtnorm, qmvnorm)
+#importFrom(plot3D, ramp.col, persp3D, contour3D, colkey, lines3D,
+#           rect3D, text3D)
 # Export explicitly by name
 export(
   check.TSD

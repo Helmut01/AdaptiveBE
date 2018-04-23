@@ -31,7 +31,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   ##       and alpha2 optimized.                                      ##
   ## ---------------------------------------------------------------- ##
   ## Author:                                                          ##
-  ##   Helmut Schütz                                                  ##
+  ##   Helmut SchÃ¼tz                                                  ##
   ##   BEBAC, Neubaugasse 36/11, 1070 Vienna, Austria                 ##
   ##   helmut.schuetz@bebac.at                                        ##
   ## ---------------------------------------------------------------- ##
@@ -46,12 +46,15 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   ##   R 3.3.0 64bit (2016-05-03)                                     ##
   ##   R 3.3.1 64bit (2016-06-21)                                     ##
   ##   R 3.4.1 64bit (2017-06-30)                                     ##
+  ##   R 3.4.4 64bit (2018-03-15)                                     ##
   ##   Power2Stage 0.4-3 (2015-11-24)                                 ##
   ##   Power2Stage 0.4-5 (2017-08-24) beta-release                    ##
+  ##   Power2Stage 0.5-1 (2018-04-03)                                 ##
   ##   PowerTOST 1.3-5 (2016-04-12)                                   ##
   ##   PowerTOST 1.3-6 (2016-06-06)                                   ##
   ##   PowerTOST 1.3-7 (2016-06-07) beta release                      ##
   ##   PowerTOST 1.4-6 (2017-08-19) beta-release                      ##
+  ##   PowerTOST 1.4-7 (2018-04-12)                                   ##
   ## ---------------------------------------------------------------- ##
   ## History:                                                         ##
   ## 2016-05-02 v0.0: New                                             ##
@@ -135,6 +138,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   ##                      pmethod="exact" is  /extremely/ slow!       ##
   ##                    - Published on GitHub.                        ##
   ##                    - n2 with sampleN2.TOST of Power2Stage.       ##
+  ## 2018-04-23 v0.8.4: - Adapred syntax to Power2Stage v0.5-1        ##
   ######################################################################
   ## PROGRAM OFFERED FOR USE WITHOUT ANY GUARANTEES AND ABSOLUTELY NO ##
   ## WARRANTY. NO LIABILITY IS ACCEPTED FOR ANY LOSS AND RISK TO      ##
@@ -179,7 +183,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   ## ---------------------------------------------------------------- ##
   ## Conditions (hopefully) stated in the protocol:                   ##
   ## ---------------------------------------------------------------- ##
-  ##   type:    'Type' of design (for the definition see Schütz 2015) ##
+  ##   type:    'Type' of design (for the definition see SchÃ¼tz 2015) ##
   ##            1: Potvin et al. "B", Fuglsang 2013 "B",              ##
   ##               Fuglsang 2014 "B" (parallel), Xu et al. "E"        ##
   ##            2: Potvin et al. "C", Montague et al. "D",            ##
@@ -312,7 +316,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   ##    Remedy: Vectorized input of sample sizes.                     ##
   ##  - No alpha-spending in the first stage = (blinded) sample size  ##
   ##    re-estimation acc. to Golkowski et al. 2014. Available in     ##
-  ##    function power.2stage.ssr(). Generally needs a /lot/ of ad-   ##
+  ##    function power.tsd.ssr(). Generally needs a /lot/ of ad-   ##
   ##    justment (contrary to what the BWSP 'believes').              ##
   ##    Too many different arguments for my taste - likely better to  ##
   ##    write specific code instead of incorporating it here.         ##
@@ -399,25 +403,25 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
     if (asym) alpha <- c(alpha1, x) else alpha <- rep(x, 2)
     if (!KM) {  # The common methods.
       if (Xover) { # Crossover.
-        power.2stage.fC(method=meth, alpha0=alpha0, alpha=alpha,
-                        n1=n1, GMR=GMR, CV=CV1, targetpower=target,
-                        pmethod=pmethod, usePE=usePE,
-                        powerstep=int.pwr, min.n2=min.n2,
-                        max.n=max.n, fCrit=fCrit, fClower=fClow,
-                        theta0=theta2, nsims=nsims,
-                        setseed=setseed)$pBE - alpha0
+        power.tsd.fC(method=meth, alpha0=alpha0, alpha=alpha,
+                    n1=n1, GMR=GMR, CV=CV1, targetpower=target,
+                    pmethod=pmethod, usePE=usePE,
+                    powerstep=int.pwr, min.n2=min.n2,
+                    max.n=max.n, fCrit=fCrit, fClower=fClow,
+                    theta0=theta2, nsims=nsims,
+                    setseed=setseed)$pBE - alpha0
       } else {     # Parallel.
-        power.2stage.p(method=meth, alpha0=alpha0, alpha=alpha,
-                       n1=n1, GMR=GMR, CV=CV1, targetpower=target,
-                       pmethod=pmethod, usePE=usePE, Nmax=Nmax,
-                       test="welch", theta0=theta2, nsims=nsims,
-                       setseed=setseed)$pBE - alpha0
+        power.tsd.p(method=meth, alpha0=alpha0, alpha=alpha,
+                    n1=n1, GMR=GMR, CV=CV1, targetpower=target,
+                    pmethod=pmethod, usePE=usePE, Nmax=Nmax,
+                    test="welch", theta0=theta2, nsims=nsims,
+                    setseed=setseed)$pBE - alpha0
       }
     } else {    # Adaptive (Karalis/Macheras and Karalis).
-      power.2stage.KM(method=meth, alpha0=alpha0, alpha=alpha,
-                      n1=n1, CV=CV1, targetpower=target,
-                      pmethod=pmethod, Nmax=Nmax, theta0=theta2,
-                      nsims=nsims, setseed=setseed)$pBE - alpha0
+      power.tsd.KM(method=meth, alpha0=alpha0, alpha=alpha,
+                   n1=n1, CV=CV1, targetpower=target,
+                   pmethod=pmethod, Nmax=Nmax, theta0=theta2,
+                   nsims=nsims, setseed=setseed)$pBE - alpha0
     }
   }
 

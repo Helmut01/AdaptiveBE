@@ -1,6 +1,6 @@
 Package: AdaptiveBE
-Version: 0.8.3.9000
-Date: 2017-08-29
+Version: 0.8.4.9000
+Date: 2018-04-23
 Title: Acceptability of Adaptive Bioequivalence Studies
 Authors@R: c(person("Helmut", "Schuetz", role = c("aut", "cre"),
                     email = "helmut.schuetz@bebac.at"))

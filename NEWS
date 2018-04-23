@@ -1,4 +1,7 @@
 Version 0.8.3.9000
+2018-04-23
+     - Adapted to function names of Power2Stage 0.5-1
+Version 0.8.3.9000
 2017-08-29 (dedicated to my wife's 60th birthday)
      - Examples updated to reflect the latest release of Power2Stage
        df=N-3 instead of N-2 in the sample size estimation and pooled
