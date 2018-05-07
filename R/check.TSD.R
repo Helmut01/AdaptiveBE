@@ -138,7 +138,7 @@ check.TSD <- function(Var1, PE1, n1, Var, PE, N, type = 1, usePE = FALSE,
   ##                      pmethod="exact" is  /extremely/ slow!       ##
   ##                    - Published on GitHub.                        ##
   ##                    - n2 with sampleN2.TOST of Power2Stage.       ##
-  ## 2018-04-23 v0.8.4: - Adapred syntax to Power2Stage v0.5-1        ##
+  ## 2018-04-23 v0.8.4: - Adapted syntax to Power2Stage v0.5-1        ##
   ######################################################################
   ## PROGRAM OFFERED FOR USE WITHOUT ANY GUARANTEES AND ABSOLUTELY NO ##
   ## WARRANTY. NO LIABILITY IS ACCEPTED FOR ANY LOSS AND RISK TO      ##

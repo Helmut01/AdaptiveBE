@@ -1,6 +1,6 @@
 # Import selectively only the used functions (good practice)
 importFrom(Power2Stage,
-           power.2stage.fC, power.2stage.p, power.2stage.KM,
+           power.tsd.fC, power.tsd.p, power.tsd.KM,
            sampleN2.TOST)
 importFrom(PowerTOST,
            mse2CV, CV2mse, se2CV, CV2se, CVfromCI, CI.BE,
