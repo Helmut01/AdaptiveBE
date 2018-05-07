@@ -57,24 +57,24 @@ TIE1.est <- function(meth, alpha0, alpha1, alpha2, n1, GMR, CV1, target,
   if (asym) alpha12 <- c(alpha1, alpha2) else alpha12 <- rep(alpha2, 2)
   if (!KM) { # Common methods.
     if (Xover) { # Crossover.
-      power.2stage.fC(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
-                      GMR=GMR, CV=CV1, targetpower=target,
-                      pmethod=pmethod, usePE=usePE, powerstep=int.pwr,
-                      min.n2=min.n2, max.n=max.n, fCrit=fCrit,
-                      fClower=fClow, theta0=theta2, nsims=nsims,
-                      setseed=setseed)$pBE_s1
+      power.tsd.fC(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
+                   GMR=GMR, CV=CV1, targetpower=target,
+                   pmethod=pmethod, usePE=usePE, powerstep=int.pwr,
+                   min.n2=min.n2, max.n=max.n, fCrit=fCrit,
+                   fClower=fClow, theta0=theta2, nsims=nsims,
+                   setseed=setseed)$pBE_s1
     } else {     # Parallel.
-      power.2stage.p(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
-                     GMR=GMR, CV=CV1, targetpower=target,
-                     pmethod=pmethod, usePE=usePE, Nmax=Nmax,
-                     test="welch", theta0=theta2, nsims=nsims,
-                     setseed=setseed)$pBE_s1
+      power.tsd.p(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
+                  GMR=GMR, CV=CV1, targetpower=target,
+                  pmethod=pmethod, usePE=usePE, Nmax=Nmax,
+                  test="welch", theta0=theta2, nsims=nsims,
+                  setseed=setseed)$pBE_s1
     }
   } else {       # Adaptive (Karalis/Macheras and Karalis).
-    power.2stage.KM(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
-                    CV=CV1, targetpower=target, pmethod=pmethod,
-                    Nmax=Nmax, theta0=theta2, nsims=nsims,
-                    setseed=setseed)$pBE_s1
+    power.tsd.KM(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
+                 CV=CV1, targetpower=target, pmethod=pmethod,
+                 Nmax=Nmax, theta0=theta2, nsims=nsims,
+                 setseed=setseed)$pBE_s1
   }
 }
 
@@ -88,24 +88,24 @@ TIE.est <- function(meth, alpha0, alpha1, alpha2, n1, GMR, CV1, target,
   if (asym) alpha12 <- c(alpha1, alpha2) else alpha12 <- rep(alpha2, 2)
   if (!KM) { # Common methods.
     if (Xover) { # Crossover.
-      power.2stage.fC(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
-                      GMR=GMR, CV=CV1, targetpower=target,
-                      pmethod=pmethod, usePE=usePE, powerstep=int.pwr,
-                      min.n2=min.n2, max.n=max.n, fCrit=fCrit,
-                      fClower=fClow, theta0=theta2, nsims=nsims,
-                      setseed=setseed)$pBE
+      power.tsd.fC(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
+                  GMR=GMR, CV=CV1, targetpower=target,
+                  pmethod=pmethod, usePE=usePE, powerstep=int.pwr,
+                  min.n2=min.n2, max.n=max.n, fCrit=fCrit,
+                  fClower=fClow, theta0=theta2, nsims=nsims,
+                  setseed=setseed)$pBE
     } else {     # Parallel.
-      power.2stage.p(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
-                     GMR=GMR, CV=CV1, targetpower=target,
-                     pmethod=pmethod, usePE=usePE, Nmax=Nmax,
-                     test="welch", theta0=theta2, nsims=nsims,
-                     setseed=setseed)$pBE
+      power.tsd.p(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
+                  GMR=GMR, CV=CV1, targetpower=target,
+                  pmethod=pmethod, usePE=usePE, Nmax=Nmax,
+                  test="welch", theta0=theta2, nsims=nsims,
+                  setseed=setseed)$pBE
     }
   } else {       # Adaptive (Karalis/Macheras and Karalis).
-    power.2stage.KM(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
-                    CV=CV1, targetpower=target, pmethod=pmethod,
-                    Nmax=Nmax, theta0=theta2, nsims=nsims,
-                    setseed=setseed)$pBE
+    power.tsd.KM(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
+                 CV=CV1, targetpower=target, pmethod=pmethod,
+                 Nmax=Nmax, theta0=theta2, nsims=nsims,
+                 setseed=setseed)$pBE
   }
 }
 
@@ -119,22 +119,22 @@ pwr.est <- function(meth, alpha0, alpha1, alpha2, n1, GMR, CV1, target,
   if (asym) alpha12 <- c(alpha1, alpha2) else alpha12 <- rep(alpha2, 2)
   if (!KM) { # Common methods.
     if (Xover) { # Crossover.
-      power.2stage.fC(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
-                      GMR=GMR, CV=CV1, targetpower=target, pmethod=pmethod,
-                      usePE=usePE, powerstep=int.pwr, min.n2=min.n2,
-                      max.n=max.n, fCrit=fCrit, fClower=fClow, theta0=GMR,
-                      nsims=1e5, setseed=setseed)
+      power.tsd.fC(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
+                  GMR=GMR, CV=CV1, targetpower=target, pmethod=pmethod,
+                  usePE=usePE, powerstep=int.pwr, min.n2=min.n2,
+                  max.n=max.n, fCrit=fCrit, fClower=fClow, theta0=GMR,
+                  nsims=1e5, setseed=setseed)
     } else {     # Parallel.
-      power.2stage.p(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
-                     GMR=GMR, CV=CV1, targetpower=target, pmethod=pmethod,
-                     usePE=usePE, Nmax=Nmax, test="welch", theta0=GMR,
-                     nsims=1e5, setseed=setseed)
+      power.tsd.p(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
+                  GMR=GMR, CV=CV1, targetpower=target, pmethod=pmethod,
+                  usePE=usePE, Nmax=Nmax, test="welch", theta0=GMR,
+                  nsims=1e5, setseed=setseed)
     }
   } else {       # Adaptive (Karalis/Macheras and Karalis).
-    power.2stage.KM(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
-                    CV=CV1, targetpower=target, pmethod=pmethod,
-                    Nmax=Nmax, theta0=GMR, nsims=1e5,
-                    setseed=setseed)
+    power.tsd.KM(method=meth, alpha0=alpha0, alpha=alpha12, n1=n1,
+                 CV=CV1, targetpower=target, pmethod=pmethod,
+                 Nmax=Nmax, theta0=GMR, nsims=1e5,
+                 setseed=setseed)
   }
 }
 
